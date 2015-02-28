@@ -23,7 +23,7 @@ var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
 if ( typeof(localStorage[ignoreList]) == 'undefined' ) {
-  localStorage[ignoreList] = "buttplug|shrike|gambol|Bo Cara Esq";
+  localStorage[ignoreList] = "buttplug|shrike|gambol|tony";
 }
 
 
