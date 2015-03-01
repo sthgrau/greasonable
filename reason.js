@@ -26,6 +26,11 @@ if ( typeof(localStorage[ignoreList]) == 'undefined' ) {
   localStorage[ignoreList] = "buttplug|shrike|gambol|tony";
 }
 
+//damn autoplay ads
+ht=document.body.getElementsByTagName('iframe')
+for (i=0;i<ht.length;i++) {
+    ht[i].style.display='none';
+}
 
 
 // *** Sets up borders and populates comments list
@@ -123,6 +128,9 @@ function makeHighlight() {
   '.new-text { color: #C5C5C5; display: none; }' +
   '.new-comment .new-text { display: inline; }' +
   '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+  '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
+  '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 250px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+  '.filters { width: 250px; height: 220px; }' +
   '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 80vh; overflow-y:scroll; }' +
   '.comments-date { font-size: 11px; }' +
   'a.comment-reply-link { font-size: 13px; }' +
@@ -135,6 +143,40 @@ function makeHighlight() {
   '.prev { position: absolute; left: -66px; top: 6px;}' +
   '';
   document.head.appendChild(styleEle);
+
+  var showFilterBox = document.createElement('div');
+  showFilterBox.className = 'show-filter-floater';
+  var filterBox = document.createElement('div');
+  filterBox.className = 'filter-floater';
+  filterBox.style.display='none';
+
+  text=document.createElement('textarea');
+  text.className='filters';
+  filterBox.appendChild(text);
+  var filtHider = document.createElement('span');
+  filtHider.textContent = '[filters]';
+  filtHider.className = 'filtHider';
+  filtHider.addEventListener('click', function(){
+      text.value=localStorage[ignoreList].split('|').join("\n");
+      filterBox.style.display = '';
+      subHider.style.display='';
+      filtHider.style.display='none';
+  }, false);
+  var subHider = document.createElement('span');
+  subHider.textContent = '[submit]';
+  subHider.className = 'subHider';
+  subHider.style.display='none';
+  subHider.addEventListener('click', function(){
+      localStorage[ignoreList] = text.value.split("\n").join("|");
+      filterBox.style.display = 'none';
+      subHider.style.display='none';
+      filtHider.style.display='';
+  }, false);
+  filterBox.appendChild(subHider);
+  showFilterBox.appendChild(filterBox);
+  showFilterBox.appendChild(filtHider);
+
+  document.body.appendChild(showFilterBox);
 
 
 
