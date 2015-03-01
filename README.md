@@ -32,4 +32,20 @@ Install tampermonkey using extensions manager.
 Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js
 This should prompt you to install in greasemonkey
 
+
+
+
 </PRE>
+How to use:
+<P>
+New comments are bounded by an orange box and are also listed in a floating box in the top right (click [+] to expand)
+<P>
+Comments can be jumped to from the floating box, most reliably by clicking on the date, clicking on hyperlinked names go to the original hyperlink dstination)
+<P>
+Replies to the current user will be highlighed by green instead, and the time marked green in the floating box.. This is a little problematic to start since the login box is not reliably available at the start. Therefore, I am setting it in localStorage, so the first time, it may not work..
+<P>
+The "<<" and ">>" go backwards and forwards in time with regard to times loaded with new comments. In case you need to restart, or the browser crashes, etc..
+<P>
+If you click the 'Hide thread' link at the bottom of a comment, it hides that comment plus any responses.
+<P>
+To change the filter list, click '[filters]' at the bottom right. Enter/remove each filter one per line and click '[submit]' .
