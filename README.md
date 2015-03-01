@@ -25,6 +25,7 @@ Features:
 Using the below method (vs method posted 2/28/2015 in comments) will allow greasemonkey to update for you
 
 
+<HR>
 <P>
 <P>
 Firefox install:
@@ -36,7 +37,15 @@ Firefox install:
 <LI>This should prompt you to install in greasemonkey</LI>
 <LI>That should be it, just reload..</LI>
 </UL>
+<P>
+Updating:
+<UL style="list-style-type:none">
+<LI>Click the monkey drop down near the search bar, near the top right. Click 'Manage User Scripts'</LI>
+<LI>Right click 'Full Reason' and click 'Find Updates'</LI>
+</UL>
 
+
+<HR>
 <P>
 <P>
 Chrome install:
@@ -47,6 +56,13 @@ Chrome install:
 <LI>Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js</LI>
 <LI>This should prompt you to install in greasemonkey</LI>
 </UL>
+<P>
+Updating:
+<UL style="list-style-type:none">
+<LI>Click the tampermonkey icon near the address bar (black box with two white circles), click 'Dashboard' in the left column, near the bottom</LI>
+<LI>In the 'Full Reason' line, click the cell in the 'Last Updated' column</LI>
+</UL>
+<HR>
 
 
 
