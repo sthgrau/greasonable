@@ -14,6 +14,10 @@ Alt-text for story pictures..
 Plus whatever the source script did: highlighting new comments, adding floating bar to jump to new comments.
 Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...
 
+
+Using the below method (vs method posted 2/28/2015 in comments) will allow greasemonkey to update for you
+
+
 Firefox install:
 
 Install greasemonkey using add-on manager.
@@ -26,4 +30,5 @@ Chrome install:
 Install tampermonkey using extensions manager.
 Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js
 This should prompt you to install in greasemonkey
+
 </PRE>
