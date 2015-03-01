@@ -6,7 +6,7 @@ Also tested with pale moon with greasemonkey..
 
 <P>
 Features:
-<LIST>
+<UL>
 <LI>Ability to go back to the last 5 refresh times in case you accidentally refresh before finishing.</LI>
 <LI>Thread hiding (or at least adapted for reason).</LI>
 <LI>Some basic filtering (whole message for now) which auto hides threads</LI>
@@ -17,7 +17,7 @@ Features:
 <LI>Alt-text for story pictures..</LI>
 <LI>Plus whatever the source script did: highlighting new comments, adding floating bar to jump to new comments.</LI>
 <LI>Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...</LI>
-</LIST>
+</UL>
 
 
 <P>
@@ -30,23 +30,23 @@ Using the below method (vs method posted 2/28/2015 in comments) will allow greas
 Firefox install:
 
 <P>
-<LIST>
+<UL style="list-style-type:none">
 <LI>Install greasemonkey using add-on manager.</LI>
 <LI>Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js</LI>
 <LI>This should prompt you to install in greasemonkey</LI>
 <LI>That should be it, just reload..</LI>
-</LIST>
+</UL>
 
 <P>
 <P>
 Chrome install:
 
 <P>
-<LIST>
+<UL style="list-style-type:none">
 <LI>Install tampermonkey using extensions manager.</LI>
 <LI>Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js</LI>
 <LI>This should prompt you to install in greasemonkey</LI>
-</LIST>
+</UL>
 
 
 
