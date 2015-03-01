@@ -1,6 +1,8 @@
 Originally developed in chrome with tampermonkey..
 Also tested with pale moon with greasemonkey..
 <BR>
+
+<P>
 Features:
 Ability to go back to the last 5 refresh times in case you accidentally refresh before finishing.
 Thread hiding (or at least adapted for reason).
@@ -12,6 +14,7 @@ Youtube inline.
 Alt-text for story pictures..
 Plus whatever the source script did: highlighting new comments, adding floating bar to jump to new comments.
 Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...
+</P>
 <BR>
 
 Firefox install:
@@ -21,6 +24,7 @@ Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js
 This should prompt you to install in greasemonkey
 That should be it, just reload..
 <BR>
+
 Chrome install:
 Install tampermonkey using extensions manager.
 Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js
