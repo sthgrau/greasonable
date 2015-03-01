@@ -34,10 +34,14 @@ if ( typeof(localStorage[ignoreList]) == 'undefined' ) {
 }
 
 //damn autoplay ads
+
+/*
+//breaking regular videos.. so disabling for now
 ht=document.body.getElementsByTagName('iframe');
 for (i=0;i<ht.length;i++) {
     ht[i].style.display='none';
 }
+*/
 
 
 // *** Sets up borders and populates comments list
@@ -446,28 +450,35 @@ function makeNewText() {
     for (j=0; j < myBodyLinks.length; j++ ) {
 
       var myBodyLink = myBodyLinks[j].href;
-      if ( myBodyLink.search("youtube") > -1 ) {
-      var movId = myBodyLink.split("/")[3].split("=")[1];
-      var newFrame = document.createElement('iframe');
-      newFrame.id = "player";
-      var tag = document.createElement('script');
-
-      if (ytLoaded === 0 ) {
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        ytLoaded=1;
+      if ( myBodyLink.search("youtube") > -1 || myBodyLink.search("youtu.be") > -1 ) {
+        var newFrame = document.createElement('iframe');
+        var movId;
+        if ( myBodyLink.search("youtube") > -1 ) {
+          movId = myBodyLink.split("/")[3].split("=")[1];
+          newFrame.src=myBodyLink.replace("watch?v=", "v/");
+        }
+        else {
+          movId = myBodyLink.split("/")[3];
+          newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/v/");
+        }
+        newFrame.id = "player";
+        var tag = document.createElement('script');
+  
+        if (ytLoaded === 0 ) {
+          tag.src = "https://www.youtube.com/iframe_api";
+          var firstScriptTag = document.getElementsByTagName('script')[0];
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+          ytLoaded=1;
+        }
+  
+        var player;
+        var done = false;
+        newFrame.class="youtube-player";
+        newFrame.title="YouTube video player";
+        newFrame.width=640;
+        newFrame.height=360;
+        myBody.appendChild(newFrame);
       }
-
-      var player;
-      var done = false;
-      newFrame.class="youtube-player";
-      newFrame.title="YouTube video player";
-      newFrame.src=myBodyLink.replace("watch?v=", "v/");
-      newFrame.width=640;
-      newFrame.height=360;
-      myBody.appendChild(newFrame);
-     }
     }
   }
 }
