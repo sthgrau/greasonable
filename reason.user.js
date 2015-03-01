@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.7.1
+// @version      0.8.1
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -19,15 +19,22 @@ var maxDatesPerPost=6;
 var myIndex=0; // keep track of what the current date viewed is. List is sorted in reverse to latest is first (ie element 0)
 var pathString = 'visited-' + location.pathname; //made this global because it is now used when manually entering a date
 var ignoreList = 'reason-ignore-list';
+var myNameTag = 'reason-user-name';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
+
+var myName="anonymousHRuserYouAreAdickifYouusethishandle";
+if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
+  myName = localStorage[myNameTag];
+    console.log("My Name is " + myName);
+}
 if ( typeof(localStorage[ignoreList]) == 'undefined' ) {
   localStorage[ignoreList] = "buttplug|shrike|gambol|tony";
 }
 
 //damn autoplay ads
-ht=document.body.getElementsByTagName('iframe')
+ht=document.body.getElementsByTagName('iframe');
 for (i=0;i<ht.length;i++) {
     ht[i].style.display='none';
 }
@@ -43,15 +50,22 @@ function border(since, updateTitle) {
   
   // Walk comments, setting borders as appropriate and saving new comments in a list
   for(var i = 0; i < commentList.length; i++) {
+    var myReplyNum=parseInt(commentList[i].classList[1].replace("reply",""));
     var postTime = Date.parse(commentList[i].querySelector('time').getAttribute('datetime'));
+    var replyToMe=0;
     if (postTime > since) {
       commentList[i].classList.add('new-comment');
-      newComments.push({time: postTime, ele: commentList[i]});
+      if ( typeof(commentList[i-1]) == "object"  && myReplyNum < 5 && commentList[i-1].classList.contains('myPost')) {
+        commentList[i].classList.add("replyToMe");
+        replyToMe=1;
+      }
+      newComments.push({time: postTime, ele: commentList[i], toMe: replyToMe});
       if (postTime > mostRecent) {
         mostRecent = postTime;
       }
     }
     else {
+      commentList[i].classList.remove("replyToMe");
       commentList[i].classList.remove('new-comment');
     }
   }
@@ -72,7 +86,12 @@ function border(since, updateTitle) {
       var ele = newComments[i].ele;
       var newLi = document.createElement('li');
       newLi.className = "ncl";
-      newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
+      if (newComments[i].toMe == 1 ) {
+        newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date-to-me">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
+      }
+      else {
+        newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
+      }
       newLi.addEventListener('click', function(ele){return function(){ele.scrollIntoView(true);};}(ele));
       commentsList.appendChild(newLi);
     }
@@ -125,6 +144,8 @@ function makeHighlight() {
   var styleEle = document.createElement('style');
   styleEle.type = 'text/css';
   styleEle.textContent = 'li.new-comment { border: 1px solid #f37221; }' +
+  'li.replyToMe { border: 2px solid #10DD1B; }' +
+  '.commentId { color: #C5C5C5; }' +
   '.new-text { color: #C5C5C5; display: none; }' +
   '.new-comment .new-text { display: inline; }' +
   '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
@@ -133,6 +154,7 @@ function makeHighlight() {
   '.filters { width: 250px; height: 220px; }' +
   '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 80vh; overflow-y:scroll; }' +
   '.comments-date { font-size: 11px; }' +
+  '.comments-date-to-me { color: #109D1B; font-size: 11px; }' +
   'a.comment-reply-link { font-size: 13px; }' +
   '.semantic-cell { display: table-cell; }' +
   '.cct-span { white-space: nowrap; }' +
@@ -327,10 +349,30 @@ function makeShowHide() {
 
   var lastReplyNum=0;
   var parentStack=[];
+  if ( document.getElementById('user_login_control').childNodes.length > 0 && document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0 ) {
+    myName=document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle')[0].innerHTML;
+    console.log("My Name is " + myName);
+  }
   for(var i=0; i<comments.length; ++i) {
     myReplyId=comments[i].id;
     myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
     parentStack[myReplyNum]=myReplyId;
+    if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0 ) {
+      commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
+    }
+    else {
+      commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
+    }
+
+    if ( commenter == myName ) {
+      comments[i].classList.add("myPost");
+    }
+    // a little hackish, but otherwise would get lots of false hits on the lowest threading
+/*
+    if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
+      comments[i].classList.add("replyToMe");
+    }
+*/
     for (k=myReplyNum-1; k>= 0; k--) {
       comments[i].classList.add("parent-" + parentStack[k]);
     }
@@ -372,23 +414,32 @@ function makeNewText() {
   li.innerHTML="Times shown in GMT" + ( hrs < 0 ? hrs : "+" + hrs);
   document.getElementById('comments').getElementsByTagName('ul')[0].appendChild(li);
    
-  console.log("start formatting story time")
-  
   var storyTime=document.getElementsByClassName('mainheading')[0].getElementsByTagName('time')[0];
   if ( typeof(storyTime) != 'undefined' ) {
     storyTime.innerHTML=returnFormattedDateString(new Date(storyTime.getAttributeNode('datetime').value));
   }
   
   for(var i=0; i<comments.length; ++i) {
+    var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
     var newText = document.createElement('span');
     newText.className = 'new-text';
-    newText.textContent = '~new~';
+    if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
+   // if (comments[i].classList.contains('replyToMe')) {
+      newText.textContent = '~new~ ~toMe~';
+    }
+    else {
+      newText.textContent = '~new~';
+    }
+    var commentId = document.createElement('span');
+    commentId.className = 'commentId';
+    commentId.textContent = comments[i].id.split("_")[1];
 
     var meta = comments[i].querySelector('p.meta');
     t=meta.getElementsByTagName('time')[0];
     tx=new Date(t.getAttributeNode('datetime').value);
     var datestring = returnFormattedDateString(tx);
     t.innerHTML=datestring;
+    meta.appendChild(commentId);
     meta.appendChild(newText);
     var myBody = comments[i].querySelector('div.content');
     var myBodyLinks = myBody.getElementsByTagName('a');
@@ -451,6 +502,14 @@ function formatPostImageText() {
     }
 }
 
+function getMyName() {
+  if ( document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0 ) {
+    myName=document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle')[0].innerHTML;
+    console.log("My Name is " + myName);
+    localStorage[myNameTag]=myName;
+  }
+}
+
 // Run iff we're on a page which looks like a post
 if((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') ) {
   formatPostImageText();
@@ -458,6 +517,9 @@ if((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(
   makeShowHide();
   makeNewText();
   hideBastards();
+  for(m=0;m<10;m++ ) {
+      setTimeout(getMyName,5000);
+  }
 }
 
 

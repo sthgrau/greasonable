@@ -1,4 +1,3 @@
-// ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
 // @version      0.8.1
@@ -50,22 +49,15 @@ function border(since, updateTitle) {
   
   // Walk comments, setting borders as appropriate and saving new comments in a list
   for(var i = 0; i < commentList.length; i++) {
-    var myReplyNum=parseInt(commentList[i].classList[1].replace("reply",""));
     var postTime = Date.parse(commentList[i].querySelector('time').getAttribute('datetime'));
-    var replyToMe=0;
     if (postTime > since) {
       commentList[i].classList.add('new-comment');
-      if ( typeof(commentList[i-1]) == "object"  && myReplyNum < 5 && commentList[i-1].classList.contains('myPost')) {
-        commentList[i].classList.add("replyToMe");
-        replyToMe=1;
-      }
-      newComments.push({time: postTime, ele: commentList[i], toMe: replyToMe});
+      newComments.push({time: postTime, ele: commentList[i]});
       if (postTime > mostRecent) {
         mostRecent = postTime;
       }
     }
     else {
-      commentList[i].classList.remove("replyToMe");
       commentList[i].classList.remove('new-comment');
     }
   }
@@ -86,12 +78,7 @@ function border(since, updateTitle) {
       var ele = newComments[i].ele;
       var newLi = document.createElement('li');
       newLi.className = "ncl";
-      if (newComments[i].toMe == 1 ) {
-        newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date-to-me">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
-      }
-      else {
-        newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
-      }
+      newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date">' + returnFormattedDateString(new Date(newComments[i].time)) + '</span>';
       newLi.addEventListener('click', function(ele){return function(){ele.scrollIntoView(true);};}(ele));
       commentsList.appendChild(newLi);
     }
@@ -144,7 +131,7 @@ function makeHighlight() {
   var styleEle = document.createElement('style');
   styleEle.type = 'text/css';
   styleEle.textContent = 'li.new-comment { border: 1px solid #f37221; }' +
-  'li.replyToMe { border: 2px solid #10DD1B; }' +
+  'li.replyToMe { border: 1px solid #ff2221; }' +
   '.commentId { color: #C5C5C5; }' +
   '.new-text { color: #C5C5C5; display: none; }' +
   '.new-comment .new-text { display: inline; }' +
@@ -154,7 +141,6 @@ function makeHighlight() {
   '.filters { width: 250px; height: 220px; }' +
   '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 80vh; overflow-y:scroll; }' +
   '.comments-date { font-size: 11px; }' +
-  '.comments-date-to-me { color: #109D1B; font-size: 11px; }' +
   'a.comment-reply-link { font-size: 13px; }' +
   '.semantic-cell { display: table-cell; }' +
   '.cct-span { white-space: nowrap; }' +
@@ -368,11 +354,9 @@ function makeShowHide() {
       comments[i].classList.add("myPost");
     }
     // a little hackish, but otherwise would get lots of false hits on the lowest threading
-/*
     if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
       comments[i].classList.add("replyToMe");
     }
-*/
     for (k=myReplyNum-1; k>= 0; k--) {
       comments[i].classList.add("parent-" + parentStack[k]);
     }
@@ -420,11 +404,9 @@ function makeNewText() {
   }
   
   for(var i=0; i<comments.length; ++i) {
-    var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
     var newText = document.createElement('span');
     newText.className = 'new-text';
-    if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
-   // if (comments[i].classList.contains('replyToMe')) {
+    if (comments[i].classList.contains('replyToMe')) {
       newText.textContent = '~new~ ~toMe~';
     }
     else {
@@ -521,5 +503,3 @@ if((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(
       setTimeout(getMyName,5000);
   }
 }
-
-

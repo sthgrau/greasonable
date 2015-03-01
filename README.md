@@ -1,4 +1,5 @@
 <PRE>
+Based on http://bakkot.github.io/SlateStarComments/ssc.js .. Thanks Bakkot!
 Originally developed in chrome with tampermonkey..
 Also tested with pale moon with greasemonkey..
 
