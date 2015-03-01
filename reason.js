@@ -427,7 +427,7 @@ function hideBastards() {
   var comments = document.getElementById('comments').querySelectorAll('.com-block');
   ignoreListText = localStorage[ignoreList].toLowerCase();
   for(var i=0; i<comments.length; i++) {
-    if ( comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].outerText.toLowerCase().search(ignoreListText) > -1 )  {
+    if ( comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].innerHTML.toLowerCase().search(ignoreListText) > -1 )  {
       comments[i].getElementsByClassName('comment-reply-link')[0].click();
     }
   }
