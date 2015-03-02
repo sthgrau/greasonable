@@ -54,7 +54,7 @@ Chrome install:
 <UL style="list-style-type:none">
 <LI>Install tampermonkey using extensions manager.</LI>
 <LI>Go to: https://github.com/sthgrau/greasonable/raw/master/reason.user.js</LI>
-<LI>This should prompt you to install in greasemonkey</LI>
+<LI>This should prompt you to install in tampermonkey</LI>
 </UL>
 <P>
 Updating:
