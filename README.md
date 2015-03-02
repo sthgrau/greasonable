@@ -81,3 +81,7 @@ The "<<" and ">>" go backwards and forwards in time with regard to times loaded 
 If you click the 'Hide thread' link at the bottom of a comment, it hides that comment plus any responses.
 <P>
 To change the filter list, click '[filters]' at the bottom right. Enter/remove each filter one per line and click '[submit]' .
+The top text area is for filtering users (as show in hover text).
+The second text area is for content filtering (also has hover text).
+You can also turn on and off inline youtube display and the filtering.. When you hit submit, it will show/hide youtube and show/hide filtered comments immediately.
+You can now cancel as well if you screw something up.. 
