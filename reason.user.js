@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.4
+// @version      0.8.5
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -11,6 +11,16 @@
 // run to reset:
 // localStorage.removeItem('visited-' + location.pathname);
 
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+//console.log(window.parent);
+//console.log(window.top);
+//console.log(window.self);
 
 // Global variables are fun!
 var lastGivenDate, commentCountText, commentsList, divDiv, dateInput, commentsScroller;
@@ -18,8 +28,11 @@ var lastGivenDate, commentCountText, commentsList, divDiv, dateInput, commentsSc
 var maxDatesPerPost=6;
 var myIndex=0; // keep track of what the current date viewed is. List is sorted in reverse to latest is first (ie element 0)
 var pathString = 'visited-' + location.pathname; //made this global because it is now used when manually entering a date
-var ignoreList = 'reason-ignore-list';
+var userIgnoreList = 'reason-ignore-list';
+var commentIgnoreList = 'reason-comment-ignore-list';
 var myNameTag = 'reason-user-name';
+var inlineYoutubeTag = 'reason-inline-youtube';
+var filterTag = 'reason-filter-comments';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
@@ -31,8 +44,17 @@ if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
   myName = localStorage[myNameTag];
     console.log("My Name is " + myName);
 }
-if ( typeof(localStorage[ignoreList]) == 'undefined' ) {
-  localStorage[ignoreList] = "buttplug|shrike|gambol|tony";
+if ( typeof(localStorage[userIgnoreList]) == 'undefined' ) {
+  localStorage[userIgnoreList] = "buttplug|shrike|gambol|tony";
+}
+if ( typeof(localStorage[commentIgnoreList]) == 'undefined' ) {
+  localStorage[commentIgnoreList] = "gambol|kochtopus";
+}
+if ( typeof(localStorage[inlineYoutubeTag]) == 'undefined' ) {
+  localStorage[inlineYoutubeTag] = true;
+}
+if ( typeof(localStorage[filterTag]) == 'undefined' ) {
+  localStorage[filterTag] = true;
 }
 
 //damn autoplay ads
@@ -159,7 +181,8 @@ function makeHighlight() {
   '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
   '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
   '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 250px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
-  '.filters { width: 250px; height: 220px; }' +
+  '.ufilters { width: 250px; height: 110px; }' +
+  '.cfilters { width: 250px; height: 80px; }' +
   '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 80vh; overflow-y:scroll; }' +
   '.comments-date { font-size: 11px; }' +
   '.comments-date-to-me { color: #109D1B; font-size: 11px; }' +
@@ -180,30 +203,84 @@ function makeHighlight() {
   filterBox.className = 'filter-floater';
   filterBox.style.display='none';
 
-  text=document.createElement('textarea');
-  text.className='filters';
-  filterBox.appendChild(text);
+  utext=document.createElement('textarea');
+  utext.className='ufilters';
+  utext.title = 'User Filter';
+  filterBox.appendChild(utext);
+  ctext=document.createElement('textarea');
+  ctext.className='cfilters';
+  ctext.title = 'Comment Filter';
+  filterBox.appendChild(ctext);
+  var cb=document.createElement('input');
+  cb.type='checkbox';
+  cb.className='youtubeCb';
+  cb.value='1';
+  cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
+
+  var lab=document.createElement('label');
+  lab.innerHTML='YouTube';
+  filterBox.appendChild(cb);
+  filterBox.appendChild(lab);
+  var cbf=document.createElement('input');
+  cbf.type='checkbox';
+  cbf.className='filterCb';
+  cbf.value='1';
+  cbf.checked =  ( localStorage[filterTag] == "true" ) ? true : false;
+  var labf=document.createElement('label');
+  labf.innerHTML='Filter';
+  filterBox.appendChild(cbf);
+  filterBox.appendChild(labf);
+    
+  filterBox.appendChild(document.createElement('br'));
   var filtHider = document.createElement('span');
   filtHider.textContent = '[filters]';
   filtHider.className = 'filtHider';
   filtHider.addEventListener('click', function(){
-      text.value=localStorage[ignoreList].split('|').join("\n");
+      utext.value=localStorage[userIgnoreList].split('|').join("\n");
+      ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
+      cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
+      cbf.checked =  ( localStorage[filterTag] == "true"  ) ? true : false;
+
       filterBox.style.display = '';
       subHider.style.display='';
+      canHider.style.display='';
       filtHider.style.display='none';
   }, false);
+
   var subHider = document.createElement('span');
   subHider.textContent = '[submit]';
   subHider.className = 'subHider';
   subHider.style.display='none';
   subHider.addEventListener('click', function(){
-      localStorage[ignoreList] = text.value.split("\n").join("|");
+      localStorage[userIgnoreList] = utext.value.split("\n").join("|");
+      localStorage[commentIgnoreList] = ctext.value.split("\n").join("|");
+      
+      if ( localStorage[inlineYoutubeTag] == "true" && cb.checked == false ) {
+          hideYouTube();
+      }
+      if ( localStorage[inlineYoutubeTag] == "false" && cb.checked == true ) {
+          showYouTube();
+      }
+      localStorage[inlineYoutubeTag] = cb.checked;
+      localStorage[filterTag] = cbf.checked;
       filterBox.style.display = 'none';
       subHider.style.display='none';
+      canHider.style.display='none';
       filtHider.style.display='';
       hideBastards();
   }, false);
   filterBox.appendChild(subHider);
+  var canHider = document.createElement('span');
+  canHider.textContent = '[cancel]';
+  canHider.className = 'canHider';
+  canHider.style.display='none';
+  canHider.addEventListener('click', function(){
+      filterBox.style.display = 'none';
+      subHider.style.display='none';
+      canHider.style.display='none';
+      filtHider.style.display='';
+  }, false);
+  filterBox.appendChild(canHider);
   showFilterBox.appendChild(filterBox);
   showFilterBox.appendChild(filtHider);
 
@@ -461,60 +538,85 @@ function makeNewText() {
     t.innerHTML=datestring;
     meta.appendChild(commentId);
     meta.appendChild(newText);
+    var youtube=localStorage[inlineYoutubeTag];
     var myBody = comments[i].querySelector('div.content');
     var myBodyLinks = myBody.getElementsByTagName('a');
     for (j=0; j < myBodyLinks.length; j++ ) {
-
-      var myBodyLink = myBodyLinks[j].href;
-      if ( myBodyLink.search("youtube") > -1 || myBodyLink.search("youtu.be") > -1 ) {
-        var newFrame = document.createElement('iframe');
-        var movId;
-        if ( myBodyLink.search("youtube") > -1 ) {
-          movId = myBodyLink.split("/")[3].split("=")[1];
-          newFrame.src=myBodyLink.replace("watch?v=", "v/");
-        }
-        else {
-          movId = myBodyLink.split("/")[3];
-          newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/v/");
-        }
-        newFrame.id = "player";
-        var tag = document.createElement('script');
+        var myBodyLink = myBodyLinks[j].href;
+        if ( myBodyLink.search("youtube") > -1 || myBodyLink.search("youtu.be") > -1 ) {
+          var newFrame = document.createElement('iframe');
+          var movId;
+          if ( myBodyLink.search("youtube") > -1 ) {
+            movId = myBodyLink.split("/")[3].split("=")[1];
+            newFrame.src=myBodyLink.replace("watch?v=", "v/");
+          }
+          else {
+            movId = myBodyLink.split("/")[3];
+            newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/v/");
+          }
+          newFrame.id = "player";
+          var tag = document.createElement('script');
   
-        if (ytLoaded === 0 ) {
-          tag.src = "https://www.youtube.com/iframe_api";
-          var firstScriptTag = document.getElementsByTagName('script')[0];
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-          ytLoaded=1;
-        }
+          if (ytLoaded === 0 ) {
+            tag.src = "https://www.youtube.com/iframe_api";
+            var firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            ytLoaded=1;
+          }
   
-        var player;
-        var done = false;
-        newFrame.class="youtube-player";
-        newFrame.title="YouTube video player";
-        newFrame.width=640;
-        newFrame.height=360;
-        myBody.appendChild(newFrame);
-      }
+          var player;
+          var done = false;
+          newFrame.className="youtube-player";
+          newFrame.title="YouTube video player";
+          newFrame.width=640;
+          newFrame.height=360;
+          newFrame.style.enabled = ( youtube == "true" ) ? '' : 'none';
+          myBody.appendChild(newFrame);
+        }
     }
   }
+}
+
+function hideYouTube() {
+    console.log('shuttin em down');
+    yts=document.getElementsByClassName('youtube-player');
+    for(var y=0;y<yts.length;y++ ) {
+        yts[y].style.display="none";
+    }
+}
+function showYouTube() {
+    console.log('light em up');
+    yts=document.getElementsByClassName('youtube-player');
+    for(var y=0;y<yts.length;y++ ) {
+        yts[y].style.display="";
+    }
 }
 
 var divs = [];
 var parent;
 function hideBastards() {
+  var filter = localStorage[filterTag];
   var comments = document.getElementById('comments').querySelectorAll('.com-block');
-  ignoreListText = localStorage[ignoreList].toLowerCase();
-  if ( ignoreListText.length > 0 ) {
+  userIgnoreListText = localStorage[userIgnoreList].toLowerCase();
+  commentIgnoreListText = localStorage[commentIgnoreList].toLowerCase();
+  if ( userIgnoreListText.length > 0 || commentIgnoreListText.length > 0 ) {
     for(var i=0; i<comments.length; i++) {
-      if ( comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(ignoreListText) > -1 )  {
-        var match = comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().match(ignoreListText);
-  	var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+      if ( filter == "true" && userIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(userIgnoreListText) > -1 )  {
+        var match = comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().match(userIgnoreListText);
+  	    var badMatch=comments[i].getElementsByClassName('bad-match')[0];
         badMatch.style.display='';
-        badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons: " + match + " ";
+        badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (user): " + match + " ";
+        comments[i].getElementsByClassName('comment-reply-link')[0].click();
+      }
+      else if ( filter == "true" && commentIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('content')[0].innerHTML.toLowerCase().search(commentIgnoreListText) > -1 )  {
+        var match = comments[i].getElementsByClassName('content')[0].innerHTML.toLowerCase().match(commentIgnoreListText);
+        var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+        badMatch.style.display='';
+        badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (content): " + match + " ";
         comments[i].getElementsByClassName('comment-reply-link')[0].click();
       }
       else if (comments[i].getElementsByClassName('comment-reply-link')[0].textContent == hidden) {
-  	var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+  	    var badMatch=comments[i].getElementsByClassName('bad-match')[0];
         badMatch.style.display='none';
         badMatch.innerHTML = '';
         comments[i].getElementsByClassName('comment-reply-link')[0].click();
@@ -548,7 +650,16 @@ function getMyName() {
 }
 
 // Run iff we're on a page which looks like a post
-if((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') ) {
+if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20')) && ! inIframe() ) {
+    if ( ! inIframe() ) {
+        console.log("says NOT in iframe");
+    }
+    else{
+        console.log("says in iframe");
+    }
+        
+  
+  console.log("time to make the donuts");
   formatPostImageText();
   makeHighlight();
   makeShowHide();
