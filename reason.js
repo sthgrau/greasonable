@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.2
+// @version      0.8.4
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -23,6 +23,8 @@ var myNameTag = 'reason-user-name';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
+var myComments=[];
+var myReplies=[];
 
 var myName="anonymousHRuserYouAreAdickifYouusethishandle";
 if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
@@ -59,7 +61,8 @@ function border(since, updateTitle) {
     var replyToMe=0;
     if (postTime > since) {
       commentList[i].classList.add('new-comment');
-      if ( typeof(commentList[i-1]) == "object"  && myReplyNum < 5 && commentList[i-1].classList.contains('myPost')) {
+      if (myReplies.indexOf(commentList[i].id) > -1 ) {
+      //if ( typeof(commentList[i-1]) == "object"  && myReplyNum < 5 && commentList[i-1].classList.contains('myPost')) {
         commentList[i].classList.add("replyToMe");
         replyToMe=1;
       }
@@ -150,6 +153,7 @@ function makeHighlight() {
   styleEle.textContent = 'li.new-comment { border: 1px solid #f37221; }' +
   'li.replyToMe { border: 2px solid #10DD1B; }' +
   '.commentId { color: #C5C5C5; }' +
+  '.bad-match { color: #C5C5C5; }' +
   '.new-text { color: #C5C5C5; display: none; }' +
   '.new-comment .new-text { display: inline; }' +
   '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
@@ -197,6 +201,7 @@ function makeHighlight() {
       filterBox.style.display = 'none';
       subHider.style.display='none';
       filtHider.style.display='';
+      hideBastards();
   }, false);
   filterBox.appendChild(subHider);
   showFilterBox.appendChild(filterBox);
@@ -370,6 +375,7 @@ function makeShowHide() {
 
     if ( commenter == myName ) {
       comments[i].classList.add("myPost");
+      myComments.push(myReplyId);
     }
     // a little hackish, but otherwise would get lots of false hits on the lowest threading
 /*
@@ -377,6 +383,9 @@ function makeShowHide() {
       comments[i].classList.add("replyToMe");
     }
 */
+    if (myComments.indexOf(parentStack[myReplyNum-1]) > -1 ) {
+      myReplies.push(myReplyId);
+    }
     for (k=myReplyNum-1; k>= 0; k--) {
       comments[i].classList.add("parent-" + parentStack[k]);
     }
@@ -425,9 +434,16 @@ function makeNewText() {
   
   for(var i=0; i<comments.length; ++i) {
     var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
+    var badMatch = document.createElement('p');
+    badMatch.className = 'bad-match';
+    badMatch.style.display = 'none';
+    var commentAct = comments[i].getElementsByClassName('commentactions')[0];
+    commentAct.appendChild(badMatch);
+
     var newText = document.createElement('span');
     newText.className = 'new-text';
-    if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
+    if (myReplies.indexOf(comments[i].id) > -1) {
+    //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
    // if (comments[i].classList.contains('replyToMe')) {
       newText.textContent = '~new~ ~toMe~';
     }
@@ -490,7 +506,17 @@ function hideBastards() {
   ignoreListText = localStorage[ignoreList].toLowerCase();
   if ( ignoreListText.length > 0 ) {
     for(var i=0; i<comments.length; i++) {
-      if ( comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].innerHTML.toLowerCase().search(ignoreListText) > -1 )  {
+      if ( comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(ignoreListText) > -1 )  {
+        var match = comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().match(ignoreListText);
+  	var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+        badMatch.style.display='';
+        badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons: " + match + " ";
+        comments[i].getElementsByClassName('comment-reply-link')[0].click();
+      }
+      else if (comments[i].getElementsByClassName('comment-reply-link')[0].textContent == hidden) {
+  	var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+        badMatch.style.display='none';
+        badMatch.innerHTML = '';
         comments[i].getElementsByClassName('comment-reply-link')[0].click();
       }
     }
