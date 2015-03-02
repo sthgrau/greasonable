@@ -180,10 +180,10 @@ function makeHighlight() {
   '.new-comment .new-text { display: inline; }' +
   '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
   '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
-  '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 250px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
-  '.ufilters { width: 250px; height: 110px; }' +
-  '.cfilters { width: 250px; height: 80px; }' +
-  '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 80vh; overflow-y:scroll; }' +
+  '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 25vh; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+  '.ufilters { width: 250px; height: 11vh; }' +
+  '.cfilters { width: 250px; height: 8vh; }' +
+  '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 70vh; overflow-y:scroll; }' +
   '.comments-date { font-size: 11px; }' +
   '.comments-date-to-me { color: #109D1B; font-size: 11px; }' +
   'a.comment-reply-link { font-size: 13px; }' +
