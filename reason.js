@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Full Reason @branch
+// @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
 // @version      0.8.8
 // @description  does something useful
