@@ -252,8 +252,8 @@ function makeHighlight() {
   subHider.className = 'subHider';
   subHider.style.display='none';
   subHider.addEventListener('click', function(){
-      localStorage[userIgnoreList] = utext.value.split("\n").join("|");
-      localStorage[commentIgnoreList] = ctext.value.split("\n").join("|");
+      localStorage[userIgnoreList] = utext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|");
+      localStorage[commentIgnoreList] = ctext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|");
       
       if ( localStorage[inlineYoutubeTag] == "true" && cb.checked == false ) {
           hideYouTube();
