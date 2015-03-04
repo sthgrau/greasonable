@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.9.2
+// @version      0.8.9.5
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -515,7 +515,7 @@ function setFormId(that) {
             var oldReplyClass = li.className.match(/reply[0-9]/)[0];
             if (oldReplyClass != 'reply5' ) {
                 newReplyClass="reply" + (parseInt(oldReplyClass.replace("reply","")) + 1);
-                newli.className.replace(oldReplyClass,newReplyClass);
+                newli.className=newli.className.replace(oldReplyClass,newReplyClass);
             }
             newli.id=li.id + globnum++;
             var newmeta=document.createElement('p');
@@ -532,6 +532,7 @@ function setFormId(that) {
             newli.appendChild(newcontent);
             li.parentNode.insertBefore(newli, li.nextSibling);
             $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
+            document.getElementById('preview_content').remove();
             $('#form-' + id)[0].parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
