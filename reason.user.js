@@ -500,7 +500,17 @@ function setFormId(that) {
     $.ajax({
         type: $(this).attr('method'),
         url: $(this).attr('action'),
-        data: $('#form-' + id).serializeArray(),
+        data: $('#form-' + id).serializeArray()
+        }).done(function(){
+     //do something when successful
+            $(this).getElementsByTagName('textarea')[0].value="";
+            $(this).parentElement.style.display='none';
+
+        }).fail(function(){
+     //do something when it fails
+        })
+  });
+/*
         success: function() {
             $(this).getElementsByTagName('textarea')[0].value="";
             $(this).parentElement.style.display='none';
@@ -508,7 +518,7 @@ function setFormId(that) {
         }
         });
     return false;
-  });
+*/
 }
 
 
