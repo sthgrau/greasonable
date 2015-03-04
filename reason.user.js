@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.8.9
+// @version      0.8.9
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -479,15 +479,23 @@ function makeShowHide() {
     var replyEle = divs[divs.length-1];
 
     replyEle.appendChild(hideLink);
-
+    var newReply=document.createElement('button');
+    newReply.id="newReply-" + comments[i].id;
+    newReply.onclick = function() { setFormId(this); };
+    newReply.innerHTML='Async Reply';
     var reply = comments[i].getElementsByClassName('comment_reply')[0];
-    reply.onclick = function() { setFormId(this); }
+      reply.id="reply-" + comments[i].id;
+      reply.style.display='none';
+      comments[i].getElementsByClassName('commentactions')[0].appendChild(newReply);
+    //reply.onclick = function() { setFormId(this); }
 //    }
   }
 }
 
 function setFormId(that) {
   var li=that.parentElement.parentElement;
+  var reply = document.getElementById("reply-" + li.id);
+  reply.click();
   var form=li.getElementsByTagName('form')[0];
   var id = li.id;
 
@@ -498,6 +506,10 @@ function setFormId(that) {
         url: $(this).attr('action'),
         data: $('#form-' + id).serializeArray(),
         success: function() {
+            console.log($('#form-' + id));
+            ///$(this).parentElement.style.display='none';
+            $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
+            $('#form-' + id)[0].parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
         });
@@ -699,10 +711,13 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   for(m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
   }
+    /*
   if (document.baseURI.match("#") ) {
       var gotoComment=document.baseURI.split("#")[1];
       setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
   }
+  */
 }
+
 
 
