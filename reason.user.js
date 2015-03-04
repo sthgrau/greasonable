@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.8.8
+// @version      0.8.8.9
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -498,8 +498,6 @@ function setFormId(that) {
         url: $(this).attr('action'),
         data: $('#form-' + id).serializeArray(),
         success: function() {
-            $(this).getElementsByTagName('textarea')[0].value="";
-            $(this).parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
         });
@@ -700,6 +698,10 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   hideBastards();
   for(m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
+  }
+  if (document.baseURI.match("#") ) {
+      var gotoComment=document.baseURI.split("#")[1];
+      setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
   }
 }
 
