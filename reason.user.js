@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.9
+// @version      0.8.9.2
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -38,6 +38,8 @@ var unhidden="Hide thread";
 var hidden="Unhide thread";
 var myComments=[];
 var myReplies=[];
+//number to append to new async comments to make them unique
+var globnum=0;
 
 var myName="anonymousHRuserYouAreAdickifYouusethishandle";
 if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
@@ -482,7 +484,7 @@ function makeShowHide() {
     var newReply=document.createElement('button');
     newReply.id="newReply-" + comments[i].id;
     newReply.onclick = function() { setFormId(this); };
-    newReply.innerHTML='Async Reply';
+    newReply.innerHTML='&nbsp;Async Reply';
     var reply = comments[i].getElementsByClassName('comment_reply')[0];
       reply.id="reply-" + comments[i].id;
       reply.style.display='none';
@@ -508,6 +510,27 @@ function setFormId(that) {
         success: function() {
             console.log($('#form-' + id));
             ///$(this).parentElement.style.display='none';
+            var newli=document.createElement('li');
+            newli.className=li.className.concat(" parent-" + li.id);
+            var oldReplyClass = li.className.match(/reply[0-9]/)[0];
+            if (oldReplyClass != 'reply5' ) {
+                newReplyClass="reply" + (parseInt(oldReplyClass.replace("reply","")) + 1);
+                newli.className.replace(oldReplyClass,newReplyClass);
+            }
+            newli.id=li.id + globnum++;
+            var newmeta=document.createElement('p');
+            newmeta.className='meta';
+            newmeta.innerHTML="you, of course | @now | #";
+            var newtextspan = document.createElement('span');
+            newtextspan.className='new-text';
+            newtextspan.innerHTML='~new~ ~async~';
+            newmeta.appendChild(newtextspan);
+            newli.appendChild(newmeta);
+            var newcontent=document.createElement('div');
+            newcontent.className='content';
+            newcontent.innerHTML=$('#form-' + id)[0].getElementsByTagName('textarea')[0].value;
+            newli.appendChild(newcontent);
+            li.parentNode.insertBefore(newli, li.nextSibling);
             $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
             $('#form-' + id)[0].parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
@@ -711,13 +734,14 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   for(m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
   }
-    /*
-  if (document.baseURI.match("#") ) {
+    
+  if (document.baseURI.match("#comment_") ) {
       var gotoComment=document.baseURI.split("#")[1];
       setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
   }
-  */
+  
 }
+
 
 
 
