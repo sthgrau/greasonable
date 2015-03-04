@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.8.7
+// @version      0.8.8.8
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -487,27 +487,20 @@ function makeShowHide() {
 }
 
 function setFormId(that) {
-  console.log('that ' + that);
   var li=that.parentElement.parentElement;
-  console.log('li ' + li);
   var form=li.getElementsByTagName('form')[0];
-  console.log('form ' + form);
   var id = li.id;
-  console.log('id ' + id);
 
-  console.log(form); form.id="form-" + id;
+  form.id="form-" + id;
   $('#form-' + id).submit(function() {
     $.ajax({
         type: $(this).attr('method'),
         url: $(this).attr('action'),
-        data: $('#form-' + id).serializeArray(),
+         data: $('#form-' + id).serializeArray(),
         success: function() {
-            //$('#form-' + id).getElementsByTagName('textarea')[0].value="";
-            //$('#form-' + id).parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
-     //do something when it fails
-    });
+        });
     return false;
   });
 /*
