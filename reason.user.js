@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason
+// @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.7
+// @version      0.8.8.9
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -479,8 +479,39 @@ function makeShowHide() {
     var replyEle = divs[divs.length-1];
 
     replyEle.appendChild(hideLink);
+
+    var reply = comments[i].getElementsByClassName('comment_reply')[0];
+    reply.onclick = function() { setFormId(this); }
 //    }
   }
+}
+
+function setFormId(that) {
+  var li=that.parentElement.parentElement;
+  var form=li.getElementsByTagName('form')[0];
+  var id = li.id;
+
+  form.id="form-" + id;
+  $('#form-' + id).submit(function() {
+    $.ajax({
+        type: $(this).attr('method'),
+        url: $(this).attr('action'),
+        data: $('#form-' + id).serializeArray(),
+        success: function() {
+            // Whatever you want here, like close dialog box, etc. 
+        }
+        });
+    return false;
+  });
+/*
+        success: function() {
+            $(this).getElementsByTagName('textarea')[0].value="";
+            $(this).parentElement.style.display='none';
+            // Whatever you want here, like close dialog box, etc. 
+        }
+        });
+    return false;
+*/
 }
 
 
@@ -667,6 +698,10 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   hideBastards();
   for(m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
+  }
+  if (document.baseURI.match("#") ) {
+      var gotoComment=document.baseURI.split("#")[1];
+      setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
   }
 }
 

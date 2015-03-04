@@ -9,8 +9,7 @@ Features:
 <UL>
 <LI>Ability to go back to the last 5 refresh times in case you accidentally refresh before finishing.</LI>
 <LI>Thread hiding (or at least adapted for reason).</LI>
-<LI>Some basic filtering (whole message for now) which auto hides threads</LI>
-<LI>that match, not just individual messages.. (this is the main thing I wanted)</LI>
+<LI>Some basic filtering (whole message for now) which auto hides threads that match, not just individual messages.. (this is the main thing I wanted)</LI>
 <LI>Simple editor for filters</LI>
 <LI>Reformatting the date strings and added support for your local time.</LI>
 <LI>Youtube inline.</LI>
