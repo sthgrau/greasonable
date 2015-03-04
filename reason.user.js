@@ -502,16 +502,10 @@ function setFormId(that) {
         url: $(this).attr('action'),
         data: $('#form-' + id).serializeArray(),
         success: function() {
-            $(this).getElementsByTagName('textarea')[0].value="";
-            $(this).parentElement.style.display='none';
+            $('#form-' + id).getElementsByTagName('textarea')[0].value="";
+            $('#form-' + id).parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
-        }).done(function(){
-     //do something when successful
-            $(this).getElementsByTagName('textarea')[0].value="";
-            $(this).parentElement.style.display='none';
-
-        }).fail(function(){
      //do something when it fails
     });
     return false;
