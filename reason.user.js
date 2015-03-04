@@ -488,8 +488,11 @@ function makeShowHide() {
 
 function setFormId(that) {
   var li=that.parentElement.parentElement;
+  console.log(li);
   var form=li.getElementsByTagName('form')[0];
+  console.log(form);
   var id = li.id;
+  console.log(id);
 
   console.log(form); form.id="form-" + id;
   $('#form-' + id).submit(function() {
