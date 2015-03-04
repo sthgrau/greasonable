@@ -479,8 +479,30 @@ function makeShowHide() {
     var replyEle = divs[divs.length-1];
 
     replyEle.appendChild(hideLink);
+
+    var reply = comments[i].getElementsByClassName('comment_reply')[0];
+    reply.onclick = function() { setFormId(this); }
 //    }
   }
+}
+
+function setFormId(that) {
+  var li=that.parentElement.parentElement;
+  var form=li.getElementsByTagName('form')[0];
+  var id = li.id;
+
+  console.log(form); form.id="form-" + id;
+  $('#form-' + id).submit(function() {
+    $.ajax({
+        type: $(this).attr('method'),
+        url: $(this).attr('action'),
+        data: $('#form-' + id).serializeArray(),
+        success: function() {
+            // Whatever you want here, like close dialog box, etc. 
+        }
+        });
+    return false;
+  });
 }
 
 
