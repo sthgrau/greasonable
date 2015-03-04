@@ -496,7 +496,6 @@ function setFormId(that) {
   console.log('id ' + id);
 
   console.log(form); form.id="form-" + id;
-/*
   $('#form-' + id).submit(function() {
     $.ajax({
         type: $(this).attr('method'),
@@ -508,7 +507,6 @@ function setFormId(that) {
         });
     return false;
   });
-*/
 }
 
 
