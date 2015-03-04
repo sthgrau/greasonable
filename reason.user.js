@@ -500,7 +500,12 @@ function setFormId(that) {
     $.ajax({
         type: $(this).attr('method'),
         url: $(this).attr('action'),
-        data: $('#form-' + id).serializeArray()
+        data: $('#form-' + id).serializeArray(),
+        success: function() {
+            $(this).getElementsByTagName('textarea')[0].value="";
+            $(this).parentElement.style.display='none';
+            // Whatever you want here, like close dialog box, etc. 
+        }
         }).done(function(){
      //do something when successful
             $(this).getElementsByTagName('textarea')[0].value="";
@@ -508,7 +513,7 @@ function setFormId(that) {
 
         }).fail(function(){
      //do something when it fails
-        })
+    });
     return false;
   });
 /*
