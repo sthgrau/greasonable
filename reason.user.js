@@ -509,6 +509,7 @@ function setFormId(that) {
         }).fail(function(){
      //do something when it fails
         })
+    return false;
   });
 /*
         success: function() {
