@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.8.6
+// @version      0.8.8.7
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -502,8 +502,8 @@ function setFormId(that) {
         url: $(this).attr('action'),
         data: $('#form-' + id).serializeArray(),
         success: function() {
-            $('#form-' + id).getElementsByTagName('textarea')[0].value="";
-            $('#form-' + id).parentElement.style.display='none';
+            //$('#form-' + id).getElementsByTagName('textarea')[0].value="";
+            //$('#form-' + id).parentElement.style.display='none';
             // Whatever you want here, like close dialog box, etc. 
         }
      //do something when it fails
