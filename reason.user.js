@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason dev
+// @name         Reason Full dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.9.5
+// @version      0.8.9.6
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
