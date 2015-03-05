@@ -445,6 +445,7 @@ function makeShowHide() {
     myReplyId=comments[i].id;
     myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
     parentStack[myReplyNum]=myReplyId;
+    var commenter;
     if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0 ) {
       commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
     }
@@ -452,6 +453,7 @@ function makeShowHide() {
       commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
     }
 
+    console.log( commenter + " " + myName);
     if ( commenter == myName ) {
       comments[i].classList.add("myPost");
       myComments.push(myReplyId);
@@ -732,7 +734,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   makeShowHide();
   makeNewText();
   hideBastards();
-  for(m=0;m<10;m++ ) {
+  for(var m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
   }
     
