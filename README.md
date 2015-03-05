@@ -65,6 +65,23 @@ Updating:
 <HR>
 
 
+Downgrade instructions:
+<P>
+Should there be a problem with a new version, you can go back to any version in the repository.
+<UL style="list-style-type:none">
+<LI>Go to: https://github.com/sthgrau/greasonable</LI>
+<LI>Click on reason.user.js in the file listing window</LI>
+<LI>Click the History button near the top right of the file contents frame</LI>
+<LI>Find a version you are happy with (unfortunately, it appears to mix both dev and master branches, dev files should in the future have a name with 'dev' in it)</LI>
+<LI>Click the button with hexadecimal text on the same line as the commit you want</LI>
+<LI>Click the view button at the top right of the diff frame</LI>
+<LI>Confirm the version and name are what you expect</LI>
+<LI>Click on the raw button at the top right of the file contents frame</LI>
+</UL>
+<P>
+I'll try to come up with a better solution for this
+<P>
+
 
 
 </PRE>
