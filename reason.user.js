@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason dev
+// @name         Reason Full dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.8.9.5
+// @version      0.8.9.6
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -445,6 +445,7 @@ function makeShowHide() {
     myReplyId=comments[i].id;
     myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
     parentStack[myReplyNum]=myReplyId;
+    var commenter;
     if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0 ) {
       commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
     }
@@ -732,7 +733,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
   makeShowHide();
   makeNewText();
   hideBastards();
-  for(m=0;m<10;m++ ) {
+  for(var m=0;m<10;m++ ) {
       setTimeout(getMyName,5000);
   }
     
