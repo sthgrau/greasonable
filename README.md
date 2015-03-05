@@ -16,6 +16,7 @@ Features:
 <LI>Alt-text for story pictures..</LI>
 <LI>Plus whatever the source script did: highlighting new comments, adding floating bar to jump to new comments.</LI>
 <LI>Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...</LI>
+<LI>Added support for Asynchronous replies.. This means you can comment and it won't reload the page. I am putting up a basic comment just to give an idea of what the comment will look like, but for now is clearly inferior to the standard.</LI>
 </UL>
 
 
