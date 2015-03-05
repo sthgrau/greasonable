@@ -718,7 +718,7 @@ function getMyName() {
 }
 
 // Run iff we're on a page which looks like a post
-if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20')) && ! inIframe() ) {
+if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/reasontv/')) && ! inIframe() ) {
     if ( ! inIframe() ) {
         console.log("says NOT in iframe");
     }
