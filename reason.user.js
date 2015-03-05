@@ -453,7 +453,6 @@ function makeShowHide() {
       commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
     }
 
-    console.log( commenter + " " + myName);
     if ( commenter == myName ) {
       comments[i].classList.add("myPost");
       myComments.push(myReplyId);
