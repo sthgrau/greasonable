@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Full Reason
+// @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
 // @version      0.9.4
 // @description  does something useful
@@ -663,8 +663,12 @@ function makeShowHide() {
 function setFormId(that) {
     var li=that.parentElement.parentElement;
     var reply = document.getElementById("reply-" + li.id);
-    reply.click();
     var form=li.getElementsByTagName('form')[0];
+    if (typeof(form) == "undefined" ) {
+      reply.click();
+      form=li.getElementsByTagName('form')[0];
+    }
+    form.parentElement.style.display='';
     var id = li.id;
     
     form.id="form-" + id;
@@ -673,9 +677,12 @@ function setFormId(that) {
             type: $(this).attr('method'),
             url: $(this).attr('action'),
             data: $('#form-' + id).serializeArray(),
+            timeout: 3000,
             success: function() {
                 console.log($('#form-' + id));
+                var newid=li.id + globnum++;
                 ///$(this).parentElement.style.display='none';
+                // fwiw, duplicate post bug not in pseudo posting code
                 var newli=document.createElement('li');
                 newli.className=li.className.concat(" parent-" + li.id);
                 var oldReplyClass = li.className.match(/reply[0-9]/)[0];
@@ -683,7 +690,8 @@ function setFormId(that) {
                     newReplyClass="reply" + (parseInt(oldReplyClass.replace("reply","")) + 1);
                     newli.className=newli.className.replace(oldReplyClass,newReplyClass);
                 }
-                newli.id=li.id + globnum++;
+                newli.id=newid;
+                console.log(newli.id);
                 var newmeta=document.createElement('p');
                 newmeta.className='meta';
                 newmeta.innerHTML="you, of course | @now | #";
@@ -698,7 +706,9 @@ function setFormId(that) {
                 newli.appendChild(newcontent);
                 li.parentNode.insertBefore(newli, li.nextSibling);
                 $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
-                document.getElementById('preview_content').remove();
+                if ( document.getElementById('preview_content') != null ) {
+                  document.getElementById('preview_content').remove();
+                }
                 $('#form-' + id)[0].parentElement.style.display='none';
                 // Whatever you want here, like close dialog box, etc. 
             }
