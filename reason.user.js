@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.1
+// @version      0.9.4.2
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -668,11 +668,36 @@ function setFormId(that) {
       reply.click();
       form=li.getElementsByTagName('form')[0];
     }
+    if (getSelection().toString().length > 0 && li.getElementsByClassName('content')[0].innerHTML.match(getSelection().toString())) {
+      form.getElementsByTagName('textarea')[0].value="<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML + " said: </cite><blockquote><P>" + getSelection().toString() + "</P></blockquote>";
+    }
+    if (document.getElementById('span-form-controls') == null ) {
+        var sfc = document.createElement('span');
+        sfc.id='span-form-controls';
+        form.getElementsByTagName('label')[0].appendChild(sfc);
+    }
+    if ( document.getElementById('preview_content') != null ) {
+       document.getElementById('preview_content').remove();
+    }
+    var sfc = document.getElementById('span-form-controls');
+    sfc.innerHTML='';
+
+    var clearDoc=document.createElement('button');
+    clearDoc.id="clear-" + li.id;
+    clearDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=''; };
+    clearDoc.innerHTML='clear';
+    sfc.appendChild(clearDoc);
+    var resetDoc=document.createElement('button');
+    resetDoc.id="reset-" + li.id;
+    resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; };
+    resetDoc.innerHTML='reset';
+    sfc.appendChild(resetDoc);
+
     form.parentElement.style.display='';
     var id = li.id;
     
     form.id="form-" + id;
-    $('#form-' + id).submit(function() {
+    $('#form-' + id)[0].submit(function() {
         $.ajax({
             type: $(this).attr('method'),
             url: $(this).attr('action'),
