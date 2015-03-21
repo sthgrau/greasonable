@@ -707,7 +707,7 @@ function setFormId(that) {
     var id = li.id;
     
     form.id="form-" + id;
-    $('#form-' + id)[0].submit(function() {
+    $('#form-' + id).submit(function() {
         $.ajax({
             type: $(this).attr('method'),
             url: $(this).attr('action'),
