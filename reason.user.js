@@ -597,66 +597,76 @@ function fontOverride() {
 
 function makeShowHide() {
     // *** Add buttons to show/hide threads
-    
+
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
-    
-    var lastReplyNum=0;
-    var parentStack=[];
-    if ( document.getElementById('user_login_control').childNodes.length > 0 && document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0 ) {
-        myName=document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle')[0].innerHTML;
+
+    var lastReplyNum = 0;
+    var parentStack = [];
+    if (document.getElementById('user_login_control').childNodes.length > 0 && document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0) {
+        myName = document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle')[0].innerHTML;
         console.log("My Name is " + myName);
     }
-    for(var i=0; i<comments.length; ++i) {
-        myReplyId=comments[i].id;
-        myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
-        parentStack[myReplyNum]=myReplyId;
+    for (var i = 0; i < comments.length; ++i) {
+        myReplyId = comments[i].id;
+        myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+        parentStack[myReplyNum] = myReplyId;
         var commenter;
-        if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0 ) {
-            commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
+        if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
+            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
         }
         else {
-            commenter=comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
+            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
         }
-        
-        if ( commenter == myName ) {
+
+        if (commenter == myName) {
             comments[i].classList.add("myPost");
             myComments.push(myReplyId);
         }
         // a little hackish, but otherwise would get lots of false hits on the lowest threading
         /*
-    if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
-      comments[i].classList.add("replyToMe");
+         if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
+         comments[i].classList.add("replyToMe");
+         }
+         */
+        if (myComments.indexOf(parentStack[myReplyNum - 1]) > -1) {
+            myReplies.push(myReplyId);
+        }
+        for (k = myReplyNum - 1; k >= 0; k--) {
+            comments[i].classList.add("parent-" + parentStack[k]);
+        }
     }
-*/
-      if (myComments.indexOf(parentStack[myReplyNum-1]) > -1 ) {
-          myReplies.push(myReplyId);
-      }
-      for (k=myReplyNum-1; k>= 0; k--) {
-          comments[i].classList.add("parent-" + parentStack[k]);
-      }
-  }
-    for(var i=0; i<comments.length; ++i) {
+
+    for (var i = 0; i < comments.length; ++i) {
+
         var hideLink = document.createElement('a');
         hideLink.className = 'comment-reply-link';
         hideLink.style.textDecoration = 'underline';
         hideLink.textContent = unhidden;
-        
+
         hideLink.addEventListener('click', commentToggle, false);
-        
+
         var divs = comments[i].children;
-        var replyEle = divs[divs.length-1];
-        
+        var replyEle = divs[divs.length - 1];
+
         replyEle.appendChild(hideLink);
-        var newReply=document.createElement('button');
-        newReply.id="newReply-" + comments[i].id;
-        newReply.onclick = function() { setFormId(this); };
-        newReply.innerHTML='&nbsp;Async Reply';
+
         var reply = comments[i].getElementsByClassName('comment_reply')[0];
-        reply.id="reply-" + comments[i].id;
-        //reply.style.display='none';
-        comments[i].getElementsByClassName('commentactions')[0].appendChild(newReply);
-        //reply.onclick = function() { setFormId(this); }
-        //    }
+
+        if (reply) {
+
+            reply.id = "reply-" + comments[i].id;
+            var newReply = document.createElement('button');
+            newReply.id = "newReply-" + comments[i].id;
+            newReply.onclick = function () {
+                setFormId(this);
+            };
+
+            newReply.innerHTML = '&nbsp; &nbsp; async reply';
+            //reply.style.display='none';
+            comments[i].getElementsByClassName('commentactions')[0].appendChild(newReply);
+            //reply.onclick = function() { setFormId(this); }
+            //    }
+        }
     }
 }
 
