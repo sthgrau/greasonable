@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.3
+// @version      0.9.4.3.1
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -678,8 +678,21 @@ function setFormId(that) {
       reply.click();
       form=li.getElementsByTagName('form')[0];
     }
-    if (getSelection().toString().length > 0 && li.getElementsByClassName('content')[0].innerHTML.match(getSelection().toString())) {
-      form.getElementsByTagName('textarea')[0].value="<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML + " said: </cite><blockquote><P>" + getSelection().toString() + "</P></blockquote>";
+    form.getElementsByTagName('textarea')[0].value="";
+    //if (getSelection().toString().length > 0 && li.getElementsByClassName('content')[0].innerHTML.match(getSelection().toString())) {
+    if (getSelection().toString().length > 0 ) {
+      var tmpdiv = document.createElement("div");
+      var formText = "<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "") + " said: </cite><blockquote><P>";
+      var sel = window.getSelection();
+      for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+        tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
+      }
+      formText = formText.concat(tmpdiv.innerHTML);
+      formText = formText.concat("</P></blockquote>");
+      if ( li.getElementsByClassName('content')[0].innerHTML.match(tmpdiv.innerHTML) ) {
+        form.getElementsByTagName('textarea')[0].value=formText;
+      }
+      //form.getElementsByTagName('textarea')[0].value="<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML + " said: </cite><blockquote><P>" + getSelection().toString() + "</P></blockquote>";
     }
     if (document.getElementById('span-form-controls') == null ) {
         var sfc = document.createElement('span');
