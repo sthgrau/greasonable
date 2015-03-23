@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4
+// @version      0.9.4.4.1
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -720,7 +720,7 @@ function setFormId(that) {
     // trying to get some fancy element editing buttons going
     var anchorTag=document.createElement('button');
     anchorTag.id="clear-" + li.id;
-    anchorTag.setAttribtute('onclick', 'var ta=document.getElementById("comment_;' + li.id + ').getElementsByTagName("textarea")[0];ta.value=ta.value.substring(0,ta.selectionStart) + "<a href=\\" + getSelection.toString() + "\\"></a>" + ta.value.substring(ta.selectionEnd+1,ta.value.length);');
+    anchorTag.setAttribtute('onclick', 'var ta=document.getElementById("comment_;' + li.id + ').getElementsByTagName("textarea")[0];ta.value=ta.value.substring(0,ta.selectionStart) + "<a href=\\" + getSelection.toString() + "\\"></a>" + ta.value.substring(ta.selectionEnd+1,ta.value.length);return false;');
     anchorTag.innerHTML="&lt;a>";
     sfc.appendChild(anchorTag);
 */
