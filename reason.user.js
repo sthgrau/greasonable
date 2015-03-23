@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.3.2
+// @version      0.9.4.4
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -708,14 +708,22 @@ function setFormId(that) {
 
     var clearDoc=document.createElement('button');
     clearDoc.id="clear-" + li.id;
-    clearDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=''; };
+    clearDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=''; return false; };
     clearDoc.innerHTML='clear';
     sfc.appendChild(clearDoc);
     var resetDoc=document.createElement('button');
     resetDoc.id="reset-" + li.id;
-    resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; };
+    resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; return false; };
     resetDoc.innerHTML='reset';
     sfc.appendChild(resetDoc);
+/*
+    // trying to get some fancy element editing buttons going
+    var anchorTag=document.createElement('button');
+    anchorTag.id="clear-" + li.id;
+    anchorTag.setAttribtute('onclick', 'var ta=document.getElementById("comment_;' + li.id + ').getElementsByTagName("textarea")[0];ta.value=ta.value.substring(0,ta.selectionStart) + "<a href=\\" + getSelection.toString() + "\\"></a>" + ta.value.substring(ta.selectionEnd+1,ta.value.length);');
+    anchorTag.innerHTML="&lt;a>";
+    sfc.appendChild(anchorTag);
+*/
 
     form.parentElement.style.display='';
     var id = li.id;
@@ -759,6 +767,7 @@ function setFormId(that) {
                   document.getElementById('preview_content').remove();
                 }
                 $('#form-' + id)[0].parentElement.style.display='none';
+                $('#form-' + id).unbind("submit");
                 // Whatever you want here, like close dialog box, etc. 
             }
         });
