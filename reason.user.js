@@ -716,14 +716,63 @@ function setFormId(that) {
     resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; return false; };
     resetDoc.innerHTML='reset';
     sfc.appendChild(resetDoc);
-/*
+ 
     // trying to get some fancy element editing buttons going
     var anchorTag=document.createElement('button');
-    anchorTag.id="clear-" + li.id;
-    anchorTag.setAttribtute('onclick', 'var ta=document.getElementById("comment_;' + li.id + ').getElementsByTagName("textarea")[0];ta.value=ta.value.substring(0,ta.selectionStart) + "<a href=\\" + getSelection.toString() + "\\"></a>" + ta.value.substring(ta.selectionEnd+1,ta.value.length);return false;');
+    anchorTag.id="anchor-" + li.id;
+    anchorTag.onmousewheel = function() { 
+        var anchorText;
+        var ta=form.getElementsByTagName('textarea')[0];
+        if ( window.getSelection().anchorNode.contains(ta) ) {
+            anchorTag='<a href="' + window.getSelection().toString() + '">' + window.getSelection().toString() + '</a>';
+        }
+        else {
+            anchorTag='<a href=""></a>';
+        }
+        ta.value=ta.value.substring(0,ta.selectionStart) + anchorTag + ta.value.substring(ta.selectionEnd,ta.value.length);
+        return false;
+    };
+    anchorTag.onclick = function() { 
+        return false;
+    };
     anchorTag.innerHTML="&lt;a>";
     sfc.appendChild(anchorTag);
-*/
+
+    var boldTag=document.createElement('button');
+    boldTag.id="bold-" + li.id;
+    boldTag.onmousewheel = function() { 
+        var boldText;
+        var ta=form.getElementsByTagName('textarea')[0];
+        if ( window.getSelection().anchorNode.contains(ta) ) {
+            anchorTag='<b>' + window.getSelection().toString() + '</b>';
+        }
+        else {
+            anchorTag='<b></b>';
+        }
+        ta.value=ta.value.substring(0,ta.selectionStart) + anchorTag + ta.value.substring(ta.selectionEnd,ta.value.length);
+        return false;
+    };
+    boldTag.onclick = function() { return false; };
+    boldTag.innerHTML="&lt;b>";
+    sfc.appendChild(boldTag);
+
+    var italTag=document.createElement('button');
+    italTag.id="ital-" + li.id;
+    italTag.onmousewheel = function() { 
+        var italText;
+        var ta=form.getElementsByTagName('textarea')[0];
+        if ( window.getSelection().anchorNode.contains(ta) ) {
+            italText='<i>' + window.getSelection().toString() + '</i>';
+        }
+        else {
+            italText='<i></i>';
+        }
+        ta.value=ta.value.substring(0,ta.selectionStart) + italText + ta.value.substring(ta.selectionEnd,ta.value.length);
+        return false;
+    };
+    italTag.onclick = function() { return false; };
+    italTag.innerHTML="&lt;i>";
+    sfc.appendChild(italTag);
 
     form.parentElement.style.display='';
     var id = li.id;
