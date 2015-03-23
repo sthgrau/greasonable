@@ -729,6 +729,7 @@ function setFormId(that) {
     var id = li.id;
     
     form.id="form-" + id;
+    $('#form-' + id).unbind("submit");
     $('#form-' + id).submit(function() {
         $.ajax({
             type: $(this).attr('method'),
@@ -767,7 +768,6 @@ function setFormId(that) {
                   document.getElementById('preview_content').remove();
                 }
                 $('#form-' + id)[0].parentElement.style.display='none';
-                $('#form-' + id).unbind("submit");
                 // Whatever you want here, like close dialog box, etc. 
             }
         });
