@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.3.1
+// @version      0.9.4.3.2
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -687,9 +687,10 @@ function setFormId(that) {
       for (var i = 0, len = sel.rangeCount; i < len; ++i) {
         tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
       }
-      formText = formText.concat(tmpdiv.innerHTML);
+      formText = formText.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
       formText = formText.concat("</P></blockquote>");
-      if ( li.getElementsByClassName('content')[0].innerHTML.match(tmpdiv.innerHTML) ) {
+      //if ( li.getElementsByClassName('content')[0].innerHTML.match(tmpdiv.innerHTML) ) {
+      if ( li.contains(document.getSelection().anchorNode) ) {
         form.getElementsByTagName('textarea')[0].value=formText;
       }
       //form.getElementsByTagName('textarea')[0].value="<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML + " said: </cite><blockquote><P>" + getSelection().toString() + "</P></blockquote>";
