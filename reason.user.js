@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.3
+// @version      0.9.4.4.4
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -381,6 +381,7 @@ function makeOptionsForm() {
     
     var userFiltTab = document.createElement('span');
     userFiltTab.textContent = '[users]';
+    userFiltTab.title = 'Patterns to filter based on username';
     userFiltTab.className = 'userFiltTab';
     userFiltTab.addEventListener('click', function(){
         utext.style.display='';
@@ -390,6 +391,7 @@ function makeOptionsForm() {
     filterBox.appendChild(userFiltTab);
     var commFiltTab = document.createElement('span');
     commFiltTab.textContent = '[comments]';
+    commFiltTab.title = 'Patterns to filter based on comment text';
     commFiltTab.className = 'commFiltTab';
     commFiltTab.addEventListener('click', function(){
         ctext.style.display='';
