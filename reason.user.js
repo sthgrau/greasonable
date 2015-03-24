@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.4
+// @version      0.9.4.4.5
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -381,10 +381,14 @@ function makeOptionsForm() {
     
     var userFiltTab = document.createElement('span');
     userFiltTab.textContent = '[users]';
+    userFiltTab.style.fontWeight=700;
     userFiltTab.title = 'Patterns to filter based on username';
     userFiltTab.className = 'userFiltTab';
     userFiltTab.addEventListener('click', function(){
         utext.style.display='';
+        userFiltTab.style.fontWeight=700;
+        commFiltTab.style.fontWeight=400;
+        miscFiltTab.style.fontWeight=400;
         ctext.style.display='none';
         miscBox.style.display='none';
     }, false);
@@ -395,6 +399,9 @@ function makeOptionsForm() {
     commFiltTab.className = 'commFiltTab';
     commFiltTab.addEventListener('click', function(){
         ctext.style.display='';
+        userFiltTab.style.fontWeight=400;
+        commFiltTab.style.fontWeight=700;
+        miscFiltTab.style.fontWeight=400;
         utext.style.display='none';
         miscBox.style.display='none';
     }, false);
@@ -406,6 +413,9 @@ function makeOptionsForm() {
         ctext.style.display='none';
         utext.style.display='none';
         miscBox.style.display='';
+        userFiltTab.style.fontWeight=400;
+        commFiltTab.style.fontWeight=400;
+        miscFiltTab.style.fontWeight=700;
     }, false);
     filterBox.appendChild(miscFiltTab);
     
