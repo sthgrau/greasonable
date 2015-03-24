@@ -18,9 +18,9 @@ Features:
 <LI>Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...</LI>
 <LI>Added support for Asynchronous replies.. This means you can comment and it won't reload the page. I am putting up a basic comment just to give an idea of what the comment will look like, but for now is clearly inferior to the standard.</LI>
 <LI>Added support for user-specified fonts. I got a list of well supported fonts, but I am open to adding more</LI>
-<LI>Added support to quote based on mouse selection, just select the text of the comment you are replying to, the press 'async reply'</LI>
-<LI>Added clear and reset buttons to async reply</LI>
 <LI>Added experimental tag dialog.. </LI>
+<LI>Added support to quote based on mouse selection, just select the text of the comment you are replying to, then press the cite button</LI>
+<LI>Added clear and reset buttons to async reply</LI>
 </UL>
 
 

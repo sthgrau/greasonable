@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.5
+// @version      0.9.4.4.6
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -685,111 +685,20 @@ function makeShowHide() {
 
 function setFormId(that) {
     var li=that.parentElement.parentElement;
-    var reply = document.getElementById("reply-" + li.id);
+    var id = li.id;
+    var reply = document.getElementById("reply-" + id);
     var form=li.getElementsByTagName('form')[0];
     if (typeof(form) == "undefined" ) {
       reply.click();
       form=li.getElementsByTagName('form')[0];
     }
     form.getElementsByTagName('textarea')[0].value="";
-    //if (getSelection().toString().length > 0 && li.getElementsByClassName('content')[0].innerHTML.match(getSelection().toString())) {
-    if (getSelection().toString().length > 0 ) {
-      var tmpdiv = document.createElement("div");
-      var formText = "<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "") + " said: </cite><blockquote><P>";
-      var sel = window.getSelection();
-      for (var i = 0, len = sel.rangeCount; i < len; ++i) {
-        tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
-      }
-      formText = formText.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
-      formText = formText.concat("</P></blockquote>");
-      //if ( li.getElementsByClassName('content')[0].innerHTML.match(tmpdiv.innerHTML) ) {
-      if ( li.contains(document.getSelection().anchorNode) ) {
-        form.getElementsByTagName('textarea')[0].value=formText;
-      }
-      //form.getElementsByTagName('textarea')[0].value="<cite>" + li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML + " said: </cite><blockquote><P>" + getSelection().toString() + "</P></blockquote>";
-    }
-    if (document.getElementById('span-form-controls') == null ) {
-        var sfc = document.createElement('span');
-        sfc.id='span-form-controls';
-        form.getElementsByTagName('label')[0].appendChild(sfc);
-    }
-    if ( document.getElementById('preview_content') != null ) {
-       document.getElementById('preview_content').remove();
-    }
-    var sfc = document.getElementById('span-form-controls');
-    sfc.innerHTML='';
+    form.id="form-" + id;
 
-    var clearDoc=document.createElement('button');
-    clearDoc.id="clear-" + li.id;
-    clearDoc.setAttribute('title', 'Clear text');
-    clearDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=''; return false; };
-    clearDoc.innerHTML='clear';
-    sfc.appendChild(clearDoc);
-    var resetDoc=document.createElement('button');
-    resetDoc.id="reset-" + li.id;
-    resetDoc.setAttribute('title', 'Clear text and close form');
-    resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; return false; };
-    resetDoc.innerHTML='reset';
-    sfc.appendChild(resetDoc);
- 
-    // trying to get some fancy element editing buttons going
-    var anchorTag=document.createElement('button');
-    anchorTag.id="anchor-" + li.id;
-    anchorTag.setAttribute('title', 'Insert link');
-    anchorTag.onclick = function(){ 
-        doAnchorDialog(form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    anchorTag.innerHTML="&lt;a>";
-    sfc.appendChild(anchorTag);
-
-    var boldTag=document.createElement('button');
-    boldTag.id="bold-" + li.id;
-    boldTag.setAttribute('title', 'Bold text');
-    boldTag.onclick = function() { 
-        myFormatText("b",form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    boldTag.innerHTML="&lt;b>";
-    sfc.appendChild(boldTag);
-
-    var bqTag=document.createElement('button');
-    bqTag.id="bq-" + li.id;
-    bqTag.setAttribute('title', 'Blockquote text');
-    bqTag.onclick = function() { 
-        myFormatText("blockquote",form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    bqTag.innerHTML="&lt;blockquote>";
-    sfc.appendChild(bqTag);
-
-    var italTag=document.createElement('button');
-    italTag.id="ital-" + li.id;
-    italTag.setAttribute('title', 'Italicize text');
-    italTag.onclick = function() { 
-        myFormatText("i",form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    italTag.innerHTML="&lt;i>";
-    sfc.appendChild(italTag);
-
-    /*
-    //italics not supported
-    var ulTag=document.createElement('button');
-    ulTag.id="ul-" + li.id;
-    ulTag.setAttribute('title', 'Underline text');
-    ulTag.onclick = function() { 
-        myFormatText("u",form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    ulTag.innerHTML="&lt;u>";
-    sfc.appendChild(ulTag);
-    */
+    createFormattingDiv();
 
     form.parentElement.style.display='';
-    var id = li.id;
     
-    form.id="form-" + id;
     $('#form-' + id).unbind("submit");
     $('#form-' + id).submit(function() {
         $.ajax({
@@ -845,12 +754,157 @@ function setFormId(that) {
 */
 }
 
+function createFormattingDiv() {
+    var ta=document.getElementsByTagName('textarea')[0];
+    var id;
+    if ( ta.parentElement.parentElement.classList.contains('reply') ) {
+        id="comment_" + ta.parentElement.getElementsByClassName('comment_parentnumber')[0].value;
+    }
+    else {
+        id="mainStory";
+    }
+    if (document.getElementById('span-form-controls') == null ) {
+        var sfc = document.createElement('span');
+        sfc.id='span-form-controls';
+        ta.parentElement.getElementsByTagName('label')[0].appendChild(sfc);
+    }
+    if ( document.getElementById('preview_content') != null ) {
+       document.getElementById('preview_content').remove();
+    }
+    var sfc = document.getElementById('span-form-controls');
+    sfc.innerHTML='';
+
+    var clearDoc=document.createElement('button');
+    clearDoc.id="clear-" + id;
+    clearDoc.setAttribute('title', 'Clear text');
+    clearDoc.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        form.getElementsByTagName('textarea')[0].value="";  
+        return false; 
+    };
+    clearDoc.innerHTML='clear';
+    sfc.appendChild(clearDoc);
+    var resetDoc=document.createElement('button');
+    resetDoc.id="reset-" + id;
+    resetDoc.setAttribute('title', 'Clear text and close form');
+    resetDoc.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        console.log(form);
+        form.getElementsByTagName('textarea')[0].value=""; 
+        if ( but.srcElement.id != 'reset-mainStory' ) {
+            form.parentElement.style.display='none'; 
+        }
+        return false; 
+    };
+    resetDoc.innerHTML='reset';
+    sfc.appendChild(resetDoc);
+ 
+    // trying to get some fancy element editing buttons going
+    var anchorTag=document.createElement('button');
+    anchorTag.id="anchor-" + id;
+    anchorTag.setAttribute('title', 'Insert link');
+    anchorTag.onclick = function(but){ 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        doAnchorDialog(form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    anchorTag.innerHTML="&lt;a>";
+    sfc.appendChild(anchorTag);
+
+    var boldTag=document.createElement('button');
+    boldTag.id="bold-" + id;
+    boldTag.setAttribute('title', 'Bold text');
+    boldTag.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        myFormatText("b",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    boldTag.innerHTML="&lt;b>";
+    sfc.appendChild(boldTag);
+
+    var bqTag=document.createElement('button');
+    bqTag.id="bq-" + id;
+    bqTag.setAttribute('title', 'Blockquote text');
+    bqTag.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        myFormatText("blockquote",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    bqTag.innerHTML="&lt;blockquote>";
+    sfc.appendChild(bqTag);
+    
+    var citeTag=document.createElement('button');
+    citeTag.id="cite-" + id;
+    citeTag.setAttribute('title', 'Cite text');
+    citeTag.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        myFormatText("cite",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    citeTag.innerHTML="&lt;cite>";
+    sfc.appendChild(citeTag);
+
+    var italTag=document.createElement('button');
+    italTag.id="ital-" + id;
+    italTag.setAttribute('title', 'Italicize text');
+    italTag.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        myFormatText("i",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    italTag.innerHTML="&lt;i>";
+    sfc.appendChild(italTag);
+    
+    /*
+    //italics not supported
+    var ulTag=document.createElement('button');
+    ulTag.id="ul-" + id;
+    ulTag.setAttribute('title', 'Underline text');
+    ulTag.onclick = function(but) { 
+        var form=but.srcElement.parentElement.parentElement.parentElement;
+        myFormatText("u",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    ulTag.innerHTML="&lt;u>";
+    sfc.appendChild(ulTag);
+    */
+}
+
 function myFormatText(tag,ta) {
     var reptext="";
     var startPos = ta.selectionStart;
     var endPos = ta.selectionEnd;
     if ( tag == "a" ) {
         reptext="<a href=" + ta.value.substring(startPos, endPos) + ">" + ta.value.substring(startPos, endPos) + "</a>";
+    }
+    else if ( tag == "cite" && document.getSelection().anchorNode != null && ! document.getSelection().anchorNode.contains(ta) && document.getSelection().toString().length > 0 ) {
+      console.log('select-o-matic charged!');
+      var tmpdiv = document.createElement("div");
+      var content=document.getElementById('content-col');
+      var comment=document.getElementById('commentcontainer');
+      var cite="Reason";
+      if (comment.contains(document.getSelection().anchorNode)) {
+          var li;
+          var notli=document.getSelection().anchorNode;
+          for (var a=0; a < 10; a++ ) {
+              li=notli.parentElement;
+              if (li.tagName == 'LI' ) {
+                  break;
+              }
+              else {
+                  notli=li;
+              }
+          }
+          cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+      }
+      reptext = "<cite>" + cite + " said: </cite><blockquote><P>";
+      var sel = window.getSelection();
+      for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+        tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
+      }
+      reptext = reptext.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
+      reptext = reptext.concat("</P></blockquote>");
+      console.log(reptext);
     }
     else {
         reptext="<" + tag + ">" + ta.value.substring(startPos, endPos) + "</" + tag + ">";
@@ -1130,6 +1184,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
     makeOptionsForm();
     makeShowHide();
     makeNewText();
+    createFormattingDiv();
     hideBastards();
     for(var m=0;m<10;m++ ) {
         setTimeout(getMyName,5000);
