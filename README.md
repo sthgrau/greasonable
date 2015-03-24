@@ -9,7 +9,7 @@ Features:
 <UL>
 <LI>Ability to go back to the last 5 refresh times in case you accidentally refresh before finishing.</LI>
 <LI>Thread hiding (or at least adapted for reason).</LI>
-<LI>Some basic filtering (whole message for now) which auto hides threads that match, not just individual messages.. (this is the main thing I wanted)</LI>
+<LI>Some basic filtering (whole message for now) which auto hides threads that match, not just individual messages.. (this is the main thing I wanted). NOTE: basic filtering supports regex.</LI>
 <LI>Simple editor for filters</LI>
 <LI>Reformatting the date strings and added support for your local time.</LI>
 <LI>Youtube inline.</LI>
@@ -18,6 +18,9 @@ Features:
 <LI>Works in both Firefox and Chrome (at least).. if I can get user-scripts to work on others, I will test them too...</LI>
 <LI>Added support for Asynchronous replies.. This means you can comment and it won't reload the page. I am putting up a basic comment just to give an idea of what the comment will look like, but for now is clearly inferior to the standard.</LI>
 <LI>Added support for user-specified fonts. I got a list of well supported fonts, but I am open to adding more</LI>
+<LI>Added support to quote based on mouse selection, just select the text of the comment you are replying to, the press 'async reply'</LI>
+<LI>Added clear and reset buttons to async reply</LI>
+<LI>Added experimental tag dialog.. </LI>
 </UL>
 
 

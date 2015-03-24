@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.2
+// @version      0.9.4.4.3
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -203,6 +203,7 @@ function makeMainCss() {
         '.bad-match { color: #C5C5C5; }' +
         '.new-text { color: #C5C5C5; display: none; }' +
         '.new-comment .new-text { display: inline; }' +
+        '.anchor-floater { position: fixed; top: 1; left: 1; bottom: 1; right: 1; margin: auto; width: 200px; height: 130px; padding: 2px 5px; background: rgba(250, 250, 250, 0.90);}' +
         '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
         '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 25vh; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
@@ -708,11 +709,13 @@ function setFormId(that) {
 
     var clearDoc=document.createElement('button');
     clearDoc.id="clear-" + li.id;
+    clearDoc.setAttribute('title', 'Clear text');
     clearDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=''; return false; };
     clearDoc.innerHTML='clear';
     sfc.appendChild(clearDoc);
     var resetDoc=document.createElement('button');
     resetDoc.id="reset-" + li.id;
+    resetDoc.setAttribute('title', 'Clear text and close form');
     resetDoc.onclick = function() { form.getElementsByTagName('textarea')[0].value=""; form.parentElement.style.display='none'; return false; };
     resetDoc.innerHTML='reset';
     sfc.appendChild(resetDoc);
@@ -720,59 +723,56 @@ function setFormId(that) {
     // trying to get some fancy element editing buttons going
     var anchorTag=document.createElement('button');
     anchorTag.id="anchor-" + li.id;
-    anchorTag.onmousewheel = function() { 
-        var anchorText;
-        var ta=form.getElementsByTagName('textarea')[0];
-        if ( window.getSelection().anchorNode.contains(ta) ) {
-            anchorTag='<a href="' + window.getSelection().toString() + '">' + window.getSelection().toString() + '</a>';
-        }
-        else {
-            anchorTag='<a href=""></a>';
-        }
-        ta.value=ta.value.substring(0,ta.selectionStart) + anchorTag + ta.value.substring(ta.selectionEnd,ta.value.length);
-        return false;
-    };
-    anchorTag.onclick = function() { 
-        return false;
+    anchorTag.setAttribute('title', 'Insert link');
+    anchorTag.onclick = function(){ 
+        doAnchorDialog(form.getElementsByTagName('textarea')[0]); 
+        return false; 
     };
     anchorTag.innerHTML="&lt;a>";
     sfc.appendChild(anchorTag);
 
     var boldTag=document.createElement('button');
     boldTag.id="bold-" + li.id;
-    boldTag.onmousewheel = function() { 
-        var boldText;
-        var ta=form.getElementsByTagName('textarea')[0];
-        if ( window.getSelection().anchorNode.contains(ta) ) {
-            anchorTag='<b>' + window.getSelection().toString() + '</b>';
-        }
-        else {
-            anchorTag='<b></b>';
-        }
-        ta.value=ta.value.substring(0,ta.selectionStart) + anchorTag + ta.value.substring(ta.selectionEnd,ta.value.length);
-        return false;
+    boldTag.setAttribute('title', 'Bold text');
+    boldTag.onclick = function() { 
+        myFormatText("b",form.getElementsByTagName('textarea')[0]); 
+        return false; 
     };
-    boldTag.onclick = function() { return false; };
     boldTag.innerHTML="&lt;b>";
     sfc.appendChild(boldTag);
 
+    var bqTag=document.createElement('button');
+    bqTag.id="bq-" + li.id;
+    bqTag.setAttribute('title', 'Blockquote text');
+    bqTag.onclick = function() { 
+        myFormatText("blockquote",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    bqTag.innerHTML="&lt;blockquote>";
+    sfc.appendChild(bqTag);
+
     var italTag=document.createElement('button');
     italTag.id="ital-" + li.id;
-    italTag.onmousewheel = function() { 
-        var italText;
-        var ta=form.getElementsByTagName('textarea')[0];
-        if ( window.getSelection().anchorNode.contains(ta) ) {
-            italText='<i>' + window.getSelection().toString() + '</i>';
-        }
-        else {
-            italText='<i></i>';
-        }
-        ta.value=ta.value.substring(0,ta.selectionStart) + italText + ta.value.substring(ta.selectionEnd,ta.value.length);
-        return false;
+    italTag.setAttribute('title', 'Italicize text');
+    italTag.onclick = function() { 
+        myFormatText("i",form.getElementsByTagName('textarea')[0]); 
+        return false; 
     };
-    italTag.onclick = function() { return false; };
     italTag.innerHTML="&lt;i>";
     sfc.appendChild(italTag);
+
+    /*
+    //italics not supported
+    var ulTag=document.createElement('button');
+    ulTag.id="ul-" + li.id;
+    ulTag.setAttribute('title', 'Underline text');
+    ulTag.onclick = function() { 
+        myFormatText("u",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    ulTag.innerHTML="&lt;u>";
+    sfc.appendChild(ulTag);
+    */
 
     form.parentElement.style.display='';
     var id = li.id;
@@ -833,6 +833,81 @@ function setFormId(that) {
 */
 }
 
+function myFormatText(tag,ta) {
+    var reptext="";
+    var startPos = ta.selectionStart;
+    var endPos = ta.selectionEnd;
+    if ( tag == "a" ) {
+        reptext="<a href=" + ta.value.substring(startPos, endPos) + ">" + ta.value.substring(startPos, endPos) + "</a>";
+    }
+    else {
+        reptext="<" + tag + ">" + ta.value.substring(startPos, endPos) + "</" + tag + ">";
+    }
+    replaceWhereWithWhat(ta,startPos,endPos,reptext);
+    //ta.value=ta.value.substring(0,startPos) + reptext + ta.value.substring(endPos,ta.value.length);
+}
+
+function replaceWhereWithWhat(ta,startPos,endPos,reptext) {
+    ta.value=ta.value.substring(0,startPos) + reptext + ta.value.substring(endPos,ta.value.length);
+}
+
+function doAnchorDialog(ta) {
+    ta=document.getElementsByTagName('textarea')[0];
+
+    var startPos = ta.selectionStart;
+    var endPos = ta.selectionEnd;
+    
+    mydiv=document.createElement('div');
+    mydiv.setAttribute('role','dialog');
+    mydiv.setAttribute('class','anchor-floater');
+    mydiv.setAttribute('tabindex',0);
+    mydiv.setAttribute('style','left: 480px; top: 324px;');
+    mydiv.id='anchor-dialog';
+
+    var mybut=document.createElement('button');
+    mybut.id='anchor-closer';
+    mybut.setAttribute('title', 'close it')
+    mybut.onclick=function() { document.getElementById('anchor-dialog').remove(); return false; };
+    mybut.innerHTML='X';
+    mydiv.appendChild(mybut);
+
+    var anchorName=document.createElement('input');
+    anchorName.id='anchorName';
+    anchorName.value=ta.value.substring(startPos, endPos);
+    var anchorNameLab=document.createElement('label');
+    anchorNameLab.innerHTML='Display Text';
+    mydiv.appendChild(anchorNameLab);
+    mydiv.appendChild(anchorName);
+
+    var anchorUrl=document.createElement('input');
+    anchorUrl.id='anchorUrl';
+    var tmpval=ta.value.substring(startPos, endPos);
+    if ( tmpval.length > 0 && tmpval.substring(0,4) != "http" ) {
+        tmpval="http://" + tmpval;
+    }
+    anchorUrl.value=tmpval;
+    var anchorUrlLab = document.createElement('label');
+    anchorUrlLab.innerHTML='Url';
+    mydiv.appendChild(anchorUrlLab);
+    mydiv.appendChild(anchorUrl);
+
+    var mysubbut=document.createElement('button');
+    mysubbut.id='anchor-submit';
+    mysubbut.onclick=function() { 
+        var tmpval2=anchorUrl.value;
+        if ( tmpval2.length > 0 && tmpval2.substring(0,4) != "http" ) {
+            tmpval2="http://" + tmpval2;
+        }
+        reptext='<a href="' + tmpval2 + '">' + anchorName.value + '</a>';
+        replaceWhereWithWhat(ta,startPos,endPos,reptext);
+        document.getElementById('anchor-dialog').remove(); 
+        return false; 
+    };
+    mysubbut.innerHTML='submit';
+    mydiv.appendChild(mysubbut)
+
+    ta.parentElement.appendChild(mydiv);
+}
 
 function returnFormattedDateString(tx) {
     var datestring = tx.getFullYear() + "/";
