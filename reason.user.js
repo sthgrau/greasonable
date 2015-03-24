@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.6
+// @version      0.9.4.4.7
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -778,7 +778,7 @@ function createFormattingDiv() {
     clearDoc.id="clear-" + id;
     clearDoc.setAttribute('title', 'Clear text');
     clearDoc.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         form.getElementsByTagName('textarea')[0].value="";  
         return false; 
     };
@@ -788,10 +788,10 @@ function createFormattingDiv() {
     resetDoc.id="reset-" + id;
     resetDoc.setAttribute('title', 'Clear text and close form');
     resetDoc.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         console.log(form);
         form.getElementsByTagName('textarea')[0].value=""; 
-        if ( but.srcElement.id != 'reset-mainStory' ) {
+        if ( but.target.id != 'reset-mainStory' ) {
             form.parentElement.style.display='none'; 
         }
         return false; 
@@ -804,7 +804,7 @@ function createFormattingDiv() {
     anchorTag.id="anchor-" + id;
     anchorTag.setAttribute('title', 'Insert link');
     anchorTag.onclick = function(but){ 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         doAnchorDialog(form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -815,7 +815,7 @@ function createFormattingDiv() {
     boldTag.id="bold-" + id;
     boldTag.setAttribute('title', 'Bold text');
     boldTag.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         myFormatText("b",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -826,7 +826,7 @@ function createFormattingDiv() {
     bqTag.id="bq-" + id;
     bqTag.setAttribute('title', 'Blockquote text');
     bqTag.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         myFormatText("blockquote",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -837,7 +837,7 @@ function createFormattingDiv() {
     citeTag.id="cite-" + id;
     citeTag.setAttribute('title', 'Cite text');
     citeTag.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         myFormatText("cite",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -848,7 +848,7 @@ function createFormattingDiv() {
     italTag.id="ital-" + id;
     italTag.setAttribute('title', 'Italicize text');
     italTag.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         myFormatText("i",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -861,7 +861,7 @@ function createFormattingDiv() {
     ulTag.id="ul-" + id;
     ulTag.setAttribute('title', 'Underline text');
     ulTag.onclick = function(but) { 
-        var form=but.srcElement.parentElement.parentElement.parentElement;
+        var form=but.target.parentElement.parentElement.parentElement;
         myFormatText("u",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
