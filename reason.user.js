@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.8
+// @version      0.9.4.4.9
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -763,15 +763,16 @@ function createFormattingDiv() {
     else {
         id="mainStory";
     }
-    if (document.getElementById('span-form-controls') == null ) {
-        var sfc = document.createElement('span');
+    var sfc;
+    if (!ta.contains(document.getElementById('span-form-controls'))) {
+        sfc = document.createElement('span');
         sfc.id='span-form-controls';
         ta.parentElement.getElementsByTagName('label')[0].appendChild(sfc);
     }
     if ( document.getElementById('preview_content') != null ) {
        document.getElementById('preview_content').remove();
     }
-    var sfc = document.getElementById('span-form-controls');
+    sfc = document.getElementById('span-form-controls');
     sfc.innerHTML='';
 
     var clearDoc=document.createElement('button');
