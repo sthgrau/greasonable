@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.7
+// @version      0.9.4.4.8
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -895,7 +895,9 @@ function myFormatText(tag,ta) {
                   notli=li;
               }
           }
-          cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+          if ( li.id != 'comments-in-tz' ) {
+              cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+          }
       }
       reptext = "<cite>" + cite + " said: </cite><blockquote><P>";
       var sel = window.getSelection();
