@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.10
+// @version      0.9.4.4.11
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -864,7 +864,7 @@ function createFormattingDiv() {
         myFormatText("s",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
-    strTag.innerHTML="&lt;cite>";
+    strTag.innerHTML="&lt;strike>";
     sfc.appendChild(strTag);
 
     /*
