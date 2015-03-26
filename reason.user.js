@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason dev
+// @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.7
+// @version      0.9.4.4.11
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -763,15 +763,16 @@ function createFormattingDiv() {
     else {
         id="mainStory";
     }
-    if (document.getElementById('span-form-controls') == null ) {
-        var sfc = document.createElement('span');
+    var sfc;
+    if (!ta.contains(document.getElementById('span-form-controls'))) {
+        sfc = document.createElement('span');
         sfc.id='span-form-controls';
         ta.parentElement.getElementsByTagName('label')[0].appendChild(sfc);
     }
     if ( document.getElementById('preview_content') != null ) {
        document.getElementById('preview_content').remove();
     }
-    var sfc = document.getElementById('span-form-controls');
+    sfc = document.getElementById('span-form-controls');
     sfc.innerHTML='';
 
     var clearDoc=document.createElement('button');
@@ -855,6 +856,17 @@ function createFormattingDiv() {
     italTag.innerHTML="&lt;i>";
     sfc.appendChild(italTag);
     
+    var strTag=document.createElement('button');
+    strTag.id="str-" + id;
+    strTag.setAttribute('title', 'Strike text');
+    strTag.onclick = function(but) { 
+        var form=but.target.parentElement.parentElement.parentElement;
+        myFormatText("s",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    strTag.innerHTML="&lt;strike>";
+    sfc.appendChild(strTag);
+
     /*
     //italics not supported
     var ulTag=document.createElement('button');
@@ -895,7 +907,9 @@ function myFormatText(tag,ta) {
                   notli=li;
               }
           }
-          cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+          if ( li.id != 'comments-in-tz' ) {
+              cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+          }
       }
       reptext = "<cite>" + cite + " said: </cite><blockquote><P>";
       var sel = window.getSelection();
