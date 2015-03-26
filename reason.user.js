@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5
+// @version      0.9.4.5.1
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -199,6 +199,7 @@ function makeMainCss() {
     styleEle.id = "main-style-css";
     styleEle.textContent = 'li.new-comment { border: 1px solid #f37221; }' +
         'li.replyToMe { border: 2px solid #10DD1B; }' +
+        'a { color: #f37221 !important; }' + 
         '.commentId { color: #C5C5C5; }' +
         '.bad-match { color: #C5C5C5; }' +
         '.new-text { color: #C5C5C5; display: none; }' +
