@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason
+// @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.11
+// @version      0.9.4.4.12
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -889,35 +889,56 @@ function myFormatText(tag,ta) {
     if ( tag == "a" ) {
         reptext="<a href=" + ta.value.substring(startPos, endPos) + ">" + ta.value.substring(startPos, endPos) + "</a>";
     }
-    else if ( tag == "cite" && document.getSelection().anchorNode != null && ! document.getSelection().anchorNode.contains(ta) && document.getSelection().toString().length > 0 ) {
+    else if ( document.getSelection().anchorNode != null && ! document.getSelection().anchorNode.contains(ta) && document.getSelection().toString().length > 0 ) {
       console.log('select-o-matic charged!');
       var tmpdiv = document.createElement("div");
       var content=document.getElementById('content-col');
       var comment=document.getElementById('commentcontainer');
       var cite="Reason";
+      var pre="";
+      var post="";
       if (comment.contains(document.getSelection().anchorNode)) {
           var li;
           var notli=document.getSelection().anchorNode;
           for (var a=0; a < 10; a++ ) {
               li=notli.parentElement;
-              if (li.tagName == 'LI' ) {
+              if (li.tagName == 'LI' || li.id == 'preview_content' ) {
                   break;
               }
               else {
                   notli=li;
               }
           }
+          var citeTime="";
           if ( li.id != 'comments-in-tz' ) {
-              cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+              if ( li.id == 'preview_content' || li.classList.contains('myPost') ) {
+                  citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  cite="I";
+              }
+              else if ( li.classList.contains('com-block') ) {
+                  citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
+              }
           }
       }
-      reptext = "<cite>" + cite + " said: </cite><blockquote><P>";
+      if ( tag == "cite" ) {
+          pre = "<cite>" + cite + " said";
+          if ( citeTime.length > 0 ) {
+              pre += " @" + citeTime;
+          }
+          pre += ": </cite><blockquote><P>";
+          post = "</P></blockquote>";
+      }
+      else {
+          pre="<" + tag + ">";
+          post="</" + tag + ">";
+      }
       var sel = window.getSelection();
       for (var i = 0, len = sel.rangeCount; i < len; ++i) {
         tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
       }
       reptext = reptext.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
-      reptext = reptext.concat("</P></blockquote>");
+      reptext = pre + reptext + post;
       console.log(reptext);
     }
     else {
