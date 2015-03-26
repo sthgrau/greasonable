@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.4.9
+// @version      0.9.4.4.10
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -856,6 +856,17 @@ function createFormattingDiv() {
     italTag.innerHTML="&lt;i>";
     sfc.appendChild(italTag);
     
+    var strTag=document.createElement('button');
+    strTag.id="str-" + id;
+    strTag.setAttribute('title', 'Strike text');
+    strTag.onclick = function(but) { 
+        var form=but.target.parentElement.parentElement.parentElement;
+        myFormatText("s",form.getElementsByTagName('textarea')[0]); 
+        return false; 
+    };
+    strTag.innerHTML="&lt;cite>";
+    sfc.appendChild(strTag);
+
     /*
     //italics not supported
     var ulTag=document.createElement('button');
