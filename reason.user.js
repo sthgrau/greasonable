@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.2
+// @version      0.9.4.5.3
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -769,6 +769,9 @@ function createFormattingDiv() {
         id="mainStory";
     }
 
+    if ( ta.parentElement.getElementsByClassName('characterCount').length > 0 ) {
+        ta.parentElement.getElementsByClassName('characterCount')[0].remove();
+    }
     var ccdiv=document.createElement('div');
     ccdiv.id='characterCount' + id;
     ccdiv.className='characterCount';
