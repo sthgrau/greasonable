@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.1
+// @version      0.9.4.5.2
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -755,6 +755,10 @@ function setFormId(that) {
 */
 }
 
+function updateNumCharsInElement(text,limitElement,max) {
+    limitElement.innerHTML=text.length + "/" + max;
+}
+
 function createFormattingDiv() {
     var ta=document.getElementsByTagName('textarea')[0];
     var id;
@@ -764,6 +768,17 @@ function createFormattingDiv() {
     else {
         id="mainStory";
     }
+
+    var ccdiv=document.createElement('div');
+    ccdiv.id='characterCount' + id;
+    ccdiv.className='characterCount';
+    ccdiv.innerHTML="0/1500";
+    ta.parentElement.getElementsByTagName('textarea')[0].onkeyup=function(x) { 
+        var cc=x.target.parentElement.getElementsByClassName('characterCount')[0]; 
+        updateNumCharsInElement(x.target.value,cc,"1500");
+    }
+    ta.parentElement.appendChild(ccdiv);
+    
     var sfc;
     if (!ta.contains(document.getElementById('span-form-controls'))) {
         sfc = document.createElement('span');
@@ -940,13 +955,15 @@ function myFormatText(tag,ta) {
       }
       reptext = reptext.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
       reptext = pre + reptext + post;
-      console.log(reptext);
+      //console.log(reptext);
     }
     else {
         reptext="<" + tag + ">" + ta.value.substring(startPos, endPos) + "</" + tag + ">";
     }
     replaceWhereWithWhat(ta,startPos,endPos,reptext);
     //ta.value=ta.value.substring(0,startPos) + reptext + ta.value.substring(endPos,ta.value.length);
+    var cc=ta.parentElement.getElementsByClassName('characterCount')[0]; 
+    updateNumCharsInElement(ta.value,cc,"1500");
 }
 
 function replaceWhereWithWhat(ta,startPos,endPos,reptext) {
