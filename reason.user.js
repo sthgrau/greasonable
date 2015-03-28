@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason
+// @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.3
+// @version      0.9.4.5.4
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -49,6 +49,7 @@ var fonts = [ 'Georgia, serif' , '"Palatino Linotype", "Book Antiqua", Palatino,
              'Impact, Charcoal, sans-serif' , '"Lucida Sans Unicode", "Lucida Grande", sans-serif' , 'Tahoma, Geneva, sans-serif' ,
              '"Trebuchet MS", Helvetica, sans-serif' , 'Verdana, Geneva, sans-serif' , '"Courier New", Courier, monospace' ,
              '"Lucida Console", Monaco, monospace' ];
+var maxCommentLength="1500";
 //number to append to new async comments to make them unique
 var globnum=0;
 
@@ -775,10 +776,10 @@ function createFormattingDiv() {
     var ccdiv=document.createElement('div');
     ccdiv.id='characterCount' + id;
     ccdiv.className='characterCount';
-    ccdiv.innerHTML="0/1500";
+    ccdiv.innerHTML="0/" + maxCommentLength;
     ta.parentElement.getElementsByTagName('textarea')[0].onkeyup=function(x) { 
         var cc=x.target.parentElement.getElementsByClassName('characterCount')[0]; 
-        updateNumCharsInElement(x.target.value,cc,"1500");
+        updateNumCharsInElement(x.target.value,cc,maxCommentLength);
     }
     ta.parentElement.appendChild(ccdiv);
     
@@ -966,7 +967,7 @@ function myFormatText(tag,ta) {
     replaceWhereWithWhat(ta,startPos,endPos,reptext);
     //ta.value=ta.value.substring(0,startPos) + reptext + ta.value.substring(endPos,ta.value.length);
     var cc=ta.parentElement.getElementsByClassName('characterCount')[0]; 
-    updateNumCharsInElement(ta.value,cc,"1500");
+    updateNumCharsInElement(ta.value,cc,maxCommentLength);
 }
 
 function replaceWhereWithWhat(ta,startPos,endPos,reptext) {
@@ -1023,6 +1024,8 @@ function doAnchorDialog(ta) {
         reptext='<a href="' + tmpval2 + '">' + anchorName.value + '</a>';
         replaceWhereWithWhat(ta,startPos,endPos,reptext);
         document.getElementById('anchor-dialog').remove(); 
+        var cc=ta.parentElement.getElementsByClassName('characterCount')[0];
+        updateNumCharsInElement(ta.value,cc,maxCommentLength);
         return false; 
     };
     mysubbut.innerHTML='submit';
