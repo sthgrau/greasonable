@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.5
+// @version      0.9.4.5.6
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -99,30 +99,30 @@ for (i=0;i<ht.length;i++) {
 
 function border(since, updateTitle) {
     lastGivenDate = since;
-    var commentList = document.getElementById('comments').querySelectorAll('.com-block');
+    var comments = document.getElementById('comments').querySelectorAll('.com-block');
     var mostRecent = since;
     var newComments = [];
     
     // Walk comments, setting borders as appropriate and saving new comments in a list
-    for(var i = 0; i < commentList.length; i++) {
-        var myReplyNum=parseInt(commentList[i].classList[1].replace("reply",""));
-        var postTime = Date.parse(commentList[i].querySelector('time').getAttribute('datetime'));
+    for(var i = 0; i < comments.length; i++) {
         var replyToMe=0;
+        var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
+        var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
         if (postTime > since) {
-            commentList[i].classList.add('new-comment');
-            if (myReplies.indexOf(commentList[i].id) > -1 ) {
-                //if ( typeof(commentList[i-1]) == "object"  && myReplyNum < 5 && commentList[i-1].classList.contains('myPost')) {
-                commentList[i].classList.add("replyToMe");
+            comments[i].classList.add('new-comment');
+            if (myReplies.indexOf(comments[i].id) > -1 ) {
+                //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
+                comments[i].classList.add("replyToMe");
                 replyToMe=1;
             }
-            newComments.push({time: postTime, ele: commentList[i], toMe: replyToMe});
+            newComments.push({time: postTime, ele: comments[i], toMe: replyToMe, visible: comments[i].style.display});
             if (postTime > mostRecent) {
                 mostRecent = postTime;
             }
         }
         else {
-            commentList[i].classList.remove("replyToMe");
-            commentList[i].classList.remove('new-comment');
+            comments[i].classList.remove("replyToMe");
+            comments[i].classList.remove('new-comment');
         }
     }
     var newCount = newComments.length;
@@ -142,13 +142,27 @@ function border(since, updateTitle) {
             var ele = newComments[i].ele;
             var newLi = document.createElement('li');
             newLi.className = "ncl";
+            newLi.id = "ncl-" + ele.id;
             var dateString = ( localStorage[localTzTag] == "true" ) ? returnFormattedDateString(new Date(newComments[i].time)) : newComments[i].time;
-            if (newComments[i].toMe == 1 ) {
-                newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date-to-me">' + dateString + '</span>';
+
+            var commentSpan = document.createElement('span');
+            commentSpan.innerHTML=ele.querySelector('strong').innerHTML;
+            commentSpan.classList = 'comments-commenter';
+            var dateSpan = document.createElement('span');
+            dateSpan.innerHTML="&nbsp;" + dateString;
+            if ( newComments[i].toMe == 1 ) {
+                dateSpan.classList.add('comments-date-to-me');
+                dateSpan.title = "Reply to your comment";
             }
             else {
-                newLi.innerHTML = '<span class="comments-commenter">' + ele.querySelector('strong').innerHTML  + '</span>' + ' <span class="comments-date">' + dateString + '</span>';
+                dateSpan.classList.add('comments-date');
             }
+            if ( newComments[i].visible !== '' ) {
+                dateSpan.classList.add('bad-match');
+                dateSpan.title += "Hidden from view";
+            }
+            newLi.appendChild(commentSpan);
+            newLi.appendChild(dateSpan);
             newLi.addEventListener('click', function(ele){return function(){ele.scrollIntoView(true);};}(ele));
             commentsList.appendChild(newLi);
         }
@@ -214,7 +228,7 @@ function makeMainCss() {
         '.miscfilters { width: 250px; height: 19vh; }' +
         '.comments-scroller { word-wrap: break-word; max-height: 500px; max-height: 70vh; overflow-y:scroll; }' +
         '.comments-date { font-size: 11px; }' +
-        '.comments-date-to-me { color: #109D1B; font-size: 11px; }' +
+        '.comments-date-to-me { color: #109D1B; font-size: 11px !important; }' +
         'a.comment-reply-link { font-size: 13px; }' +
         '.semantic-cell { display: table-cell; }' +
         '.cct-span { white-space: nowrap; }' +
@@ -241,7 +255,7 @@ function makeHighlight() {
     // The floating box.
     var floatBox = document.createElement('div');
     floatBox.className = 'comments-floater';
-    
+    floatBox.id = 'comments-floater';
     
     // Container for the text node below.
     var cctSpan = document.createElement('span');
@@ -258,6 +272,7 @@ function makeHighlight() {
     // The text box with the date.
     dateInput = document.createElement('input');
     dateInput.className = 'date-input';
+    dateInput.disabled = true;
     dateInput.addEventListener('blur', function(){
         var newDate = Date.parse(dateInput.value);
         if (isNaN(newDate)) {
@@ -287,12 +302,14 @@ function makeHighlight() {
     var hider = document.createElement('span');
     hider.textContent = '[+]';
     hider.className = 'hider';
-    hider.addEventListener('click', function(){
+    hider.addEventListener('click', function(ele){
         if (commentsScroller.style.display != 'none') {
             commentsScroller.style.display = 'none';
+            ele.target.textContent = '[+]';
         }
         else {
             commentsScroller.style.display = '';
+            ele.target.textContent = '[-]';
         }
     }, false);
     var prev = document.createElement('span');
@@ -311,6 +328,7 @@ function makeHighlight() {
     // Scrollable container for the comments list 
     commentsScroller = document.createElement('div');
     commentsScroller.className = 'comments-scroller';
+    commentsScroller.id = 'comments-scroller';
     commentsScroller.style.display = 'none';
     
     // Actual list of comments
@@ -637,12 +655,6 @@ function makeShowHide() {
             comments[i].classList.add("myPost");
             myComments.push(myReplyId);
         }
-        // a little hackish, but otherwise would get lots of false hits on the lowest threading
-        /*
-         if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
-         comments[i].classList.add("replyToMe");
-         }
-         */
         if (myComments.indexOf(parentStack[myReplyNum - 1]) > -1) {
             myReplies.push(myReplyId);
         }
@@ -1169,6 +1181,7 @@ var parent;
 function hideBastards() {
     var filter = localStorage[filterTag];
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
+    var cs=document.getElementById('comments-scroller');
     userIgnoreListText = localStorage[userIgnoreList].toLowerCase();
     commentIgnoreListText = localStorage[commentIgnoreList].toLowerCase();
     if ( userIgnoreListText.length > 0 || commentIgnoreListText.length > 0 ) {
@@ -1192,6 +1205,13 @@ function hideBastards() {
                 badMatch.style.display='none';
                 badMatch.innerHTML = '';
                 comments[i].getElementsByClassName('comment-reply-link')[0].click();
+            }
+
+            if ( comments[i].getElementsByClassName('bad-match')[0].style.display == '' || comments[i].style.display != '' ) {
+                if ( ele=document.getElementById('ncl-' + comments[i].id) ) {
+                    ele.getElementsByClassName('comments-date')[0].classList.add('bad-match');
+                    ele.getElementsByClassName('comments-date')[0].title += "Hidden from view";
+                }
             }
         }
     }
@@ -1247,7 +1267,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
     makeNewText();
     createFormattingDiv();
     hideBastards();
-    for(var m=0;m<10;m++ ) {
+    for(var m=0;m<3;m++ ) {
         setTimeout(getMyName,5000);
     }
     
@@ -1275,4 +1295,6 @@ else if (location.pathname.substring(0,7).match(/\/blog\/?$/) && ! inIframe()) {
         }
     }
 }
-    
+else {
+    console.log("Did I end up in an iframe?");
+}    
