@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.6
+// @version      0.9.4.5.7
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -115,7 +115,7 @@ function border(since, updateTitle) {
                 comments[i].classList.add("replyToMe");
                 replyToMe=1;
             }
-            newComments.push({time: postTime, ele: comments[i], toMe: replyToMe, visible: comments[i].style.display});
+            newComments.push({time: postTime, ele: comments[i], toMe: replyToMe, visible: comments[i].style.display, badMatchVisible: comments[i].getElementsByClassName('bad-match')[0].style.display});
             if (postTime > mostRecent) {
                 mostRecent = postTime;
             }
@@ -157,7 +157,7 @@ function border(since, updateTitle) {
             else {
                 dateSpan.classList.add('comments-date');
             }
-            if ( newComments[i].visible !== '' ) {
+            if ( newComments[i].visible !== '' || newComments[i].badMatchVisible == '' ) {
                 dateSpan.classList.add('bad-match');
                 dateSpan.title += "Hidden from view";
             }
