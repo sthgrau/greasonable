@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.5.4
+// @version      0.9.4.5.5
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -1004,6 +1004,7 @@ function doAnchorDialog(ta) {
 
     var anchorUrl=document.createElement('input');
     anchorUrl.id='anchorUrl';
+    anchorUrl.tabIndex=0;
     var tmpval=ta.value.substring(startPos, endPos);
     if ( tmpval.length > 0 && tmpval.substring(0,4) != "http" ) {
         tmpval="http://" + tmpval;
@@ -1029,9 +1030,10 @@ function doAnchorDialog(ta) {
         return false; 
     };
     mysubbut.innerHTML='submit';
-    mydiv.appendChild(mysubbut)
+    mydiv.appendChild(mysubbut);
 
     ta.parentElement.appendChild(mydiv);
+    anchorName.focus();
 }
 
 function returnFormattedDateString(tx) {
