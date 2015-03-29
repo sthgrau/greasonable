@@ -157,7 +157,7 @@ function border(since, updateTitle) {
             else {
                 dateSpan.classList.add('comments-date');
             }
-            if ( newComments[i].visible !== '' ) {
+            if ( newComments[i].visible !== ''  || ele.classList.contains('hide-me') ) {
                 dateSpan.classList.add('bad-match');
                 dateSpan.title += "Hidden from view";
             }
@@ -1191,6 +1191,7 @@ function hideBastards() {
                 var badMatch=comments[i].getElementsByClassName('bad-match')[0];
                 badMatch.style.display='';
                 badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (user): " + match + " ";
+                comments[i].classList.add('hide-me');
                 comments[i].getElementsByClassName('comment-reply-link')[0].click();
             }
             else if ( filter == "true" && commentIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('content')[0].innerHTML.toLowerCase().search(commentIgnoreListText) > -1 )  {
@@ -1198,6 +1199,7 @@ function hideBastards() {
                 var badMatch=comments[i].getElementsByClassName('bad-match')[0];
                 badMatch.style.display='';
                 badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (content): " + match + " ";
+                comments[i].classList.add('hide-me');
                 comments[i].getElementsByClassName('comment-reply-link')[0].click();
             }
             else if (comments[i].getElementsByClassName('comment-reply-link')[0].textContent == hidden) {
