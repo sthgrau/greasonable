@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Full Reason
+// @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.6
+// @version      0.9.4.6.1
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -37,6 +37,7 @@ var customFontTag = 'reason-custom-fonts';
 var commentFontTag = 'reason-comment-font';
 var storyFontTag = 'reason-story-font';
 var localTzTag = 'reason-use-local-tz';
+var clearCommentTag = 'reason-show-clear-buttons';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
@@ -78,6 +79,9 @@ if ( typeof(localStorage[inlineYoutubeTag]) == 'undefined' ) {
 }
 if ( typeof(localStorage[filterTag]) == 'undefined' ) {
     localStorage[filterTag] = true;
+}
+if ( typeof(localStorage[clearCommentTag]) == 'undefined' ) {
+    localStorage[clearCommentTag] = true;
 }
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
@@ -522,7 +526,19 @@ function makeOptionsForm() {
     fslab.innerHTML='Use custom fonts';
     miscBox.appendChild(fscb);
     miscBox.appendChild(fslab);
+
+    var cc=document.createElement('input');
+    cc.type='checkbox';
+    cc.className='clearCommentsCb';
+    cc.value='1';
+    cc.checked =  ( localStorage[clearCommentsTag] == "true"  ) ? true : false;
+    var cclab=document.createElement('label');
+    cclab.innerHTML='Show Clear/Reset buttons';
+    miscBox.appendChild(cc);
+    miscBox.appendChild(cclab);
+
     filterBox.appendChild(miscBox);
+    
     
     filterBox.appendChild(document.createElement('br'));
     var filtHider = document.createElement('span');
@@ -532,6 +548,7 @@ function makeOptionsForm() {
         utext.value=localStorage[userIgnoreList].split('|').join("\n");
         ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
         cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
+        cc.checked =  ( localStorage[clearCommentsTag] == "true"  ) ? true : false;
         cbf.checked =  ( localStorage[filterTag] == "true"  ) ? true : false;
         fscb.checked =  ( localStorage[customFontTag] == "true"  ) ? true : false;
         ltzcb.checked = ( localStorage[localTzTag] == "true" ) ? true : false;
@@ -573,6 +590,7 @@ function makeOptionsForm() {
         }
         
         localStorage[inlineYoutubeTag] = cb.checked;
+        localStorage[clearCommentsTag] = cc.checked;
         localStorage[filterTag] = cbf.checked;
         
         localStorage[localTzTag] = ltzcb.checked;
@@ -807,30 +825,32 @@ function createFormattingDiv() {
     sfc = document.getElementById('span-form-controls');
     sfc.innerHTML='';
 
-    var clearDoc=document.createElement('button');
-    clearDoc.id="clear-" + id;
-    clearDoc.setAttribute('title', 'Clear text');
-    clearDoc.onclick = function(but) { 
-        var form=but.target.parentElement.parentElement.parentElement;
-        form.getElementsByTagName('textarea')[0].value="";  
-        return false; 
-    };
-    clearDoc.innerHTML='clear';
-    sfc.appendChild(clearDoc);
-    var resetDoc=document.createElement('button');
-    resetDoc.id="reset-" + id;
-    resetDoc.setAttribute('title', 'Clear text and close form');
-    resetDoc.onclick = function(but) { 
-        var form=but.target.parentElement.parentElement.parentElement;
-        console.log(form);
-        form.getElementsByTagName('textarea')[0].value=""; 
-        if ( but.target.id != 'reset-mainStory' ) {
-            form.parentElement.style.display='none'; 
-        }
-        return false; 
-    };
-    resetDoc.innerHTML='reset';
-    sfc.appendChild(resetDoc);
+    if ( localStorage[clearCommentTag] == "true" ) {
+        var clearDoc=document.createElement('button');
+        clearDoc.id="clear-" + id;
+        clearDoc.setAttribute('title', 'Clear text');
+        clearDoc.onclick = function(but) { 
+            var form=but.target.parentElement.parentElement.parentElement;
+            form.getElementsByTagName('textarea')[0].value="";  
+            return false; 
+        };
+        clearDoc.innerHTML='clear';
+        sfc.appendChild(clearDoc);
+        var resetDoc=document.createElement('button');
+        resetDoc.id="reset-" + id;
+        resetDoc.setAttribute('title', 'Clear text and close form');
+        resetDoc.onclick = function(but) { 
+            var form=but.target.parentElement.parentElement.parentElement;
+            console.log(form);
+            form.getElementsByTagName('textarea')[0].value=""; 
+            if ( but.target.id != 'reset-mainStory' ) {
+                form.parentElement.style.display='none'; 
+            }
+            return false; 
+        };
+        resetDoc.innerHTML='reset';
+        sfc.appendChild(resetDoc);
+    }
  
     // trying to get some fancy element editing buttons going
     var anchorTag=document.createElement('button');
