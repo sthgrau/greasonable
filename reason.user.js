@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason dev
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.6.2
+// @version      0.9.4.6.3
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -534,6 +534,7 @@ function makeOptionsForm() {
     cc.checked =  ( localStorage[clearCommentTag] == "true"  ) ? true : false;
     var cclab=document.createElement('label');
     cclab.innerHTML='Show Clear/Reset buttons';
+    miscBox.appendChild(document.createElement('br'));
     miscBox.appendChild(cc);
     miscBox.appendChild(cclab);
 
