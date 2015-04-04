@@ -1,3 +1,4 @@
+Support channel occasionally populated: http://webchat.freenode.net/?channels=greasonable
 <P>
 Based on http://bakkot.github.io/SlateStarComments/ssc.js .. Thanks Bakkot!
 <P>
