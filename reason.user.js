@@ -1151,7 +1151,7 @@ function makeNewText() {
             parentBut.innerHTML = '&uarr;';
             parentBut.title = 'goto parent (' + gotoComment.split('_')[1] + ')';
             parentBut.onclick=function(ele) { 
-               var gotoComment = ele.path[2].className.match(/parent-comment_[0-9]*/)[0].split("-")[1];
+               var gotoComment = ele.target.parentElement.parentElement.className.match(/parent-comment_[0-9]*/)[0].split("-")[1];
                setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
             };
             meta.appendChild(parentBut);
