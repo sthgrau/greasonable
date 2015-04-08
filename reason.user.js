@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.6.3
+// @version      0.9.4.6.4
 // @description  does something useful
 // @author       Me
 // @match        http://reason.com/*
@@ -1133,7 +1133,7 @@ function makeNewText() {
         var commentId = document.createElement('span');
         commentId.className = 'commentId';
         commentId.textContent = comments[i].id.split("_")[1];
-        
+
         var meta = comments[i].querySelector('p.meta');
         t=meta.getElementsByTagName('time')[0];
         tx=new Date(t.getAttributeNode('datetime').value);
@@ -1142,6 +1142,21 @@ function makeNewText() {
             t.innerHTML=datestring;
         }
         meta.appendChild(commentId);
+        
+        if ( comments[i].classList.toString().match(/parent-comment_[0-9]*/) ) {
+            var gotoComment = comments[i].classList.toString().match(/parent-comment_[0-9]*/)[0].split("-")[1];
+            var parentBut = document.createElement('button');
+            parentBut.id = 'jumpFrom' + comments[i].id;
+            parentBut.className = 'parentButton';
+            parentBut.innerHTML = '&uarr;';
+            parentBut.title = 'goto parent (' + gotoComment.split('_')[1] + ')';
+            parentBut.onclick=function(ele) { 
+               var gotoComment = ele.path[2].className.match(/parent-comment_[0-9]*/)[0].split("-")[1];
+               setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
+            };
+            meta.appendChild(parentBut);
+        }
+        
         meta.appendChild(newText);
         var youtube=localStorage[inlineYoutubeTag];
         var myBody = comments[i].querySelector('div.content');
@@ -1152,8 +1167,24 @@ function makeNewText() {
                 var newFrame = document.createElement('iframe');
                 var movId;
                 if ( myBodyLink.search("youtube") > -1 ) {
-                    movId = myBodyLink.split("/")[3].split("=")[1];
-                    newFrame.src=myBodyLink.replace("watch?v=", "v/");
+                    var tmpSrc=myBodyLink.replace("#t","&start");
+                    var args=tmpSrc.split("?")[1].split("&");
+                    tmpSrc=tmpSrc.split("?")[0];
+                    var otargs=[];
+                    for ( yti=0; yti < args.length; yti++ ) {
+                        if ( args[yti].search("v=") === 0 ) {
+                            tmpSrc += "?" + args[yti];
+                            movId=args[yti].split("=")[1];
+                        }
+                        else {
+                            otargs.push(args[yti]);
+                        }
+                    }
+                    if ( otargs.length > 0 ) {
+                        tmpSrc += "&" + otargs.join("&");
+                    }
+                  //  movId = myBodyLink.split("/")[3].split("=")[1];
+                    newFrame.src=tmpSrc.replace("watch?v=", "v/");
                 }
                 else {
                     movId = myBodyLink.split("/")[3];
@@ -1248,8 +1279,8 @@ function formatPostImageText() {
             imgCap=postImgs[i].getElementsByClassName('caption')[0];
             imgAlt=postImgs[i].getElementsByTagName('img')[0].alt;
             imgTitle=postImgs[i].getElementsByTagName('img')[0].title;
-            if (imgAlt.length > 0 && imgAlt != imgCap.innerHTML ) {
-                if (imgTitle.length > 0 && imgTitle != imgCap.innerHTML && imgTitle != imgAlt) {
+            if (imgAlt.length > 0 && imgAlt.toLowerCase() != imgCap.innerHTML.toLowerCase() ) {
+                if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && imgTitle.toLowerCase() != imgAlt.toLowerCase()) {
                     imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
                     imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
                 }
@@ -1257,7 +1288,7 @@ function formatPostImageText() {
                     imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
                 }
             }
-            else if (imgTitle.length > 0 && imgTitle != imgCap.innerHTML && imgTitle != imgAlt) {
+            else if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && imgTitle.toLowerCase() != imgAlt.toLowerCase()) {
                 imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
             }
         }
