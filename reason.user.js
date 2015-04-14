@@ -1163,10 +1163,10 @@ function makeNewText() {
         var myBodyLinks = myBody.getElementsByTagName('a');
         for (j=0; j < myBodyLinks.length; j++ ) {
             var myBodyLink = myBodyLinks[j].href;
-            if ( myBodyLink.search("youtube") > -1 || myBodyLink.search("youtu.be") > -1 ) {
+            if ( myBodyLink.search("youtube.com") > -1 || myBodyLink.search("youtu.be") > -1 ) {
                 var newFrame = document.createElement('iframe');
                 var movId;
-                if ( myBodyLink.search("youtube") > -1 ) {
+                if ( myBodyLink.search("youtube.com") > -1 ) {
                     var tmpSrc=myBodyLink.replace("#t","&start");
                     var args=tmpSrc.split("?")[1].split("&");
                     tmpSrc=tmpSrc.split("?")[0];
