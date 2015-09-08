@@ -1,4 +1,4 @@
-Support channel occasionally populated: http://webchat.freenode.net/?channels=greasonable
+<strikeout>Support channel occasionally populated: http://webchat.freenode.net/?channels=greasonable</strikeout>
 <P>
 Based on http://bakkot.github.io/SlateStarComments/ssc.js .. Thanks Bakkot!
 <P>
