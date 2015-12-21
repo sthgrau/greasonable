@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7
+// @version      0.9.4.7.1
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -111,9 +111,12 @@ function border(since, updateTitle) {
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
     var mostRecent = since;
     var newComments = [];
+    var parentStack = [];
     // Walk comments, setting borders as appropriate and saving new comments in a list
     for(var i = 0; i < comments.length; i++) {
         myReplyId = comments[i].id;
+        myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+        parentStack[myReplyNum] = myReplyId;
         var commenter;
         if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
             commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
@@ -125,12 +128,16 @@ function border(since, updateTitle) {
             comments[i].classList.add("myPost");
             myComments.push(myReplyId);
         }
+        if (myComments.indexOf(parentStack[myReplyNum - 1]) > -1) {
+            myReplies.push(myReplyId);
+        }
         var replyToMe=0;
         var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
         var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
         if (postTime > since) {
             comments[i].classList.add('new-comment');
-            if (myReplies.indexOf(comments[i].id) > -1  || ( i > 0 && comments[i-1].classList.contains('myPost'))) {
+            if (myReplies.indexOf(comments[i].id) > -1 ) {
+           // if (myReplies.indexOf(comments[i].id) > -1  || ( i > 0 && comments[i-1].classList.contains('myPost'))) {
                 //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
                 comments[i].classList.add("areplyToMe");
                 replyToMe=1;
