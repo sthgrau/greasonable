@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.6.7
+// @version      0.9.4.7
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -38,6 +38,7 @@ var commentFontTag = 'reason-comment-font';
 var storyFontTag = 'reason-story-font';
 var localTzTag = 'reason-use-local-tz';
 var clearCommentTag = 'reason-show-clear-buttons';
+var noThreadingTag = 'reason-no-threading';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
@@ -53,6 +54,7 @@ var fonts = [ 'Georgia, serif' , '"Palatino Linotype", "Book Antiqua", Palatino,
 var maxCommentLength="1500";
 //number to append to new async comments to make them unique
 var globnum=0;
+var loadCount=0;
 
 var myName="anonymousHRuserYouAreAdickifYouusethishandle";
 if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
@@ -83,6 +85,9 @@ if ( typeof(localStorage[filterTag]) == 'undefined' ) {
 if ( typeof(localStorage[clearCommentTag]) == 'undefined' ) {
     localStorage[clearCommentTag] = true;
 }
+if ( typeof(localStorage[noThreadingTag]) == 'undefined' ) {
+    localStorage[noThreadingTag] = false;
+}
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
 }
@@ -106,17 +111,28 @@ function border(since, updateTitle) {
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
     var mostRecent = since;
     var newComments = [];
-    
     // Walk comments, setting borders as appropriate and saving new comments in a list
     for(var i = 0; i < comments.length; i++) {
+        myReplyId = comments[i].id;
+        var commenter;
+        if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
+            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
+        }
+        else {
+            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
+        }
+        if (commenter == myName) {
+            comments[i].classList.add("myPost");
+            myComments.push(myReplyId);
+        }
         var replyToMe=0;
         var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
         var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
         if (postTime > since) {
             comments[i].classList.add('new-comment');
-            if (myReplies.indexOf(comments[i].id) > -1 ) {
+            if (myReplies.indexOf(comments[i].id) > -1  || ( i > 0 && comments[i-1].classList.contains('myPost'))) {
                 //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
-                comments[i].classList.add("replyToMe");
+                comments[i].classList.add("areplyToMe");
                 replyToMe=1;
             }
             newComments.push({time: postTime, ele: comments[i], toMe: replyToMe, visible: comments[i].style.display});
@@ -125,7 +141,7 @@ function border(since, updateTitle) {
             }
         }
         else {
-            comments[i].classList.remove("replyToMe");
+            comments[i].classList.remove("areplyToMe");
             comments[i].classList.remove('new-comment');
         }
     }
@@ -217,7 +233,7 @@ function makeMainCss() {
     styleEle.type = 'text/css';
     styleEle.id = "main-style-css";
     styleEle.textContent = 'li.new-comment { border: 1px solid #f37221; }' +
-        'li.replyToMe { border: 2px solid #10DD1B; }' +
+        'li.areplyToMe { border: 2px solid #10DD1B; }' +
         'a { color: #f37221 !important; }' + 
         '.commentId { color: #C5C5C5; }' +
         '.bad-match { color: #C5C5C5; }' +
@@ -367,19 +383,28 @@ function makeHighlight() {
 
 function getLastVisit(delta)
 {
+ //   console.log("delta == " + delta);
+ //   console.log("before myIndex == " + myIndex);
     delta = typeof delta != 'undefined' ? delta : 0; //default to show current index
     myIndex = myIndex + delta;
+ //   console.log("myIndex == " + myIndex);
     var lastVisits = [];
     if ( typeof(localStorage[pathString]) != 'undefined' ) {
         lastVisits = localStorage[pathString].split(",");
+ //   console.log("lastVisits == " + lastVisits);
+    }
+    loadCount = loadCount + 1;
+    if ( loadCount == 2 ) {
+        myIndex = myIndex + delta;
     }
     if ( myIndex < 0 ) {
         myIndex = 0; //keep it to a minimum of 0
     }
-    
+ //   console.log("myIndex == " + myIndex);
     var lastVisit=0;
-    if ( myIndex >= lastVisits.length ) {
-        myIndex = lastVisits.length - 1; //keep it to the earliest record
+    if ( myIndex > lastVisits.length ) {
+        myIndex = lastVisits.length; //keep it to the earliest record
+ //   console.log("myIndex == " + myIndex);
     }
     else {
         lastVisit = parseInt(lastVisits[myIndex]);
@@ -387,7 +412,9 @@ function getLastVisit(delta)
             lastVisit = 0; // prehistory! Actually 1970, which predates all SSC comments, so we're good.
         }
     }
+ //   console.log("lastVisit == " + lastVisit);
     dateInput.value = (localStorage[localTzTag] == 'true' ) ? returnFormattedDateString(new Date(lastVisit)) : lastVisit;
+ //   console.log("dateInput.value == " + dateInput.value);
     var mostRecent = border(lastVisit, false);
     lastVisits.push(mostRecent);
     if ( ( lastVisits.length == 1 ) || ( mostRecent != lastVisits[0] ) ) {
@@ -537,6 +564,17 @@ function makeOptionsForm() {
     miscBox.appendChild(document.createElement('br'));
     miscBox.appendChild(cc);
     miscBox.appendChild(cclab);
+    var nt=document.createElement('input');
+
+    nt.type='checkbox';
+    nt.className='noThreadingCb';
+    nt.value='0';
+    nt.checked =  ( localStorage[noThreadingTag] == "true"  ) ? true : false;
+    var ntlab=document.createElement('label');
+    ntlab.innerHTML='Do Not Thread';
+    miscBox.appendChild(document.createElement('br'));
+    miscBox.appendChild(nt);
+    miscBox.appendChild(ntlab);
 
     filterBox.appendChild(miscBox);
     
@@ -550,6 +588,7 @@ function makeOptionsForm() {
         ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
         cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
         cc.checked =  ( localStorage[clearCommentTag] == "true"  ) ? true : false;
+        nt.checked =  ( localStorage[noThreadingTag] == "true"  ) ? true : false;
         cbf.checked =  ( localStorage[filterTag] == "true"  ) ? true : false;
         fscb.checked =  ( localStorage[customFontTag] == "true"  ) ? true : false;
         ltzcb.checked = ( localStorage[localTzTag] == "true" ) ? true : false;
@@ -592,6 +631,7 @@ function makeOptionsForm() {
         
         localStorage[inlineYoutubeTag] = cb.checked;
         localStorage[clearCommentTag] = cc.checked;
+        localStorage[noThreadingTag] = nt.checked;
         localStorage[filterTag] = cbf.checked;
         
         localStorage[localTzTag] = ltzcb.checked;
@@ -662,6 +702,7 @@ function makeShowHide() {
         myReplyId = comments[i].id;
         myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
         parentStack[myReplyNum] = myReplyId;
+/*
         var commenter;
         if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
             commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
@@ -669,11 +710,11 @@ function makeShowHide() {
         else {
             commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
         }
-
         if (commenter == myName) {
             comments[i].classList.add("myPost");
             myComments.push(myReplyId);
         }
+*/
         if (myComments.indexOf(parentStack[myReplyNum - 1]) > -1) {
             myReplies.push(myReplyId);
         }
@@ -1163,6 +1204,34 @@ function makeNewText() {
         var myBodyLinks = myBody.getElementsByTagName('a');
         for (j=0; j < myBodyLinks.length; j++ ) {
             var myBodyLink = myBodyLinks[j].href;
+            if ( document.URL.split(":")[0] == 'https' ) {
+                myBodyLink=myBodyLink.replace("http://","https://");
+            }
+	    if ( myBodyLink.search("liveleak.com") > -1 ||  myBodyLink.search("vimeo.com") > -1 ) {
+                var newFrame = document.createElement('iframe');
+                if ( myBodyLink.search("vimeo.com") > -1 ) {
+                    tmpSrc = myBodyLink.replace("/vimeo","/player.vimeo");
+                    if ( tmpSrc.search("vimeo.com/m/") > -1 ) {
+                        tmpSrc = tmpSrc.replace("vimeo.com/m","vimeo.com");
+                    }
+                    if ( tmpSrc.search("vimeo.com/video") == -1 ) {
+                        tmpSrc = tmpSrc.replace("vimeo.com/","vimeo.com/video/");
+                    }
+                    newFrame.className="vimeo-player";
+                    newFrame.title="Vimeo video player";
+                }
+		if ( myBodyLink.search("liveleak.com") > -1 ) {
+		    tmpSrc = myBodyLink.replace("/view","/ll_embed");
+		    tmpSrc = tmpSrc.replace("\?i","\?f");
+                    newFrame.className="liveleak-player";
+                    newFrame.title="Liveleak video player";
+		}
+                newFrame.src = tmpSrc;
+                newFrame.frameBorder = 0;
+                newFrame.width=640;
+                newFrame.height=360;
+                myBody.appendChild(newFrame);
+	    }
             if ( myBodyLink.search("youtube.com") > -1 || myBodyLink.search("youtu.be") > -1 ) {
                 var newFrame = document.createElement('iframe');
                 var movId;
@@ -1176,6 +1245,9 @@ function makeNewText() {
                             tmpSrc += "?" + args[yti];
                             movId=args[yti].split("=")[1];
                         }
+                        else if ( args[yti].startsWith("html5=") ) {
+                            ;
+                        }
                         else {
                             otargs.push(args[yti]);
                         }
@@ -1184,11 +1256,11 @@ function makeNewText() {
                         tmpSrc += "&" + otargs.join("&");
                     }
                   //  movId = myBodyLink.split("/")[3].split("=")[1];
-                    newFrame.src=tmpSrc.replace("watch?v=", "v/");
+                    newFrame.src=tmpSrc.replace("watch?v=", "embed/");
                 }
                 else {
                     movId = myBodyLink.split("/")[3];
-                    newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/v/");
+                    newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/embed/").replace("?t","?start");
                 }
                 newFrame.id = "player";
                 var tag = document.createElement('script');
@@ -1277,20 +1349,49 @@ function formatPostImageText() {
         postImgs=post[h].getElementsByClassName('addcaption');
         for(var i=0; i<postImgs.length; i++) {
             imgCap=postImgs[i].getElementsByClassName('caption')[0];
+	    var imgWidth = imgCap.parentNode.style["width"].replace("px","");
             imgAlt=postImgs[i].getElementsByTagName('img')[0].alt;
             imgTitle=postImgs[i].getElementsByTagName('img')[0].title;
-            if (imgAlt.length > 0 && imgAlt.toLowerCase() != imgCap.innerHTML.toLowerCase() ) {
-                if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && imgTitle.toLowerCase() != imgAlt.toLowerCase()) {
-                    imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
+	    if ( postImgs[i].getElementsByTagName('img')[0].alt.search("|||") > -1 ) {
+                cmpImgAlt=postImgs[i].getElementsByTagName('img')[0].alt.split(" |||")[0];
+                othImgAlt=postImgs[i].getElementsByTagName('img')[0].alt.split(" ||| ")[1];
+	    }
+	    else {
+	        cmpImgAlt=imgAlt;
+	    }
+	    if ( postImgs[i].getElementsByTagName('img')[0].title.search("|||") > -1 ) {
+                cmpImgTitle=postImgs[i].getElementsByTagName('img')[0].title.split(" |||")[0];
+                othImgTitle=postImgs[i].getElementsByTagName('img')[0].title.split(" ||| ")[1];
+	    }
+	    else {
+	        cmpImgTitle=imgTitle;
+	    }
+            if (imgAlt.length > 0 && cmpImgAlt.toLowerCase() != imgCap.innerHTML.toLowerCase() ) {
+                if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && cmpImgTitle.toLowerCase() != cmpImgAlt.toLowerCase()) {
+                    imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" -- " + imgCap.innerHTML) : "");
                     imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
                 }
                 else {
-                    imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
+		    if ( imgCap.innerHTML == othImgAlt ) {
+		        imgCap.innerHTML = imgAlt;
+		    }
+		    else {
+                        imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" = " + imgCap.innerHTML) : "");
+		    }
                 }
             }
             else if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && imgTitle.toLowerCase() != imgAlt.toLowerCase()) {
-                imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
+                imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" == " + imgCap.innerHTML) : "");
             }
+	    var tab=document.createElement("table");
+	    var row=document.createElement("row");
+	    var td=document.createElement("td");
+	    td.innerHTML=imgCap.innerHTML;
+	    td.width=imgWidth;
+	    row.appendChild(td);
+	    tab.appendChild(row);
+	    imgCap.parentNode.appendChild(tab);
+	    imgCap.style.display="none";
         }
     }
 }
@@ -1303,8 +1404,39 @@ function getMyName() {
     }
 }
 
+function unthreadTest() {
+    var comments = document.getElementById('comments').querySelectorAll('.com-block');
+    var reorderlist = _(comments).pluck('id').sort();
+    console.log("trying to unravel threads");
+    for ( var i=0; i<comments.length; i++ ) {
+        var thisComm = document.getElementById(reorderlist[i]);
+        thisComm.className=toggleIndent(thisComm.classList).join(" ");
+        if ( ! thisComm.classList.contains("reply0") ) {
+            thisComm.classList.add("reply0");
+        }
+        thisComm.parentNode.appendChild(thisComm);
+    }
+}
+
+function toggleIndent(array) {
+    var newArray = [];
+    for ( var j=0; j < array.length; j++ ) {
+        element=array[j];
+        if ( element.startsWith("reply") ) {
+            newArray.push("no" + element);
+        }
+        else if (element.startsWith("noreply") ) {
+            newArray.push(element.replace("no",""));
+        }
+        else {
+            newArray.push(element);
+        }
+    }
+    return newArray;
+}
+
 // Run iff we're on a page which looks like a post
-if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/reasontv/')) && ! inIframe() ) {
+if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/reasontv/') || (location.pathname.substring(0,10) == '/brickbat/')) && ! inIframe() ) {
     if ( ! inIframe() ) {
         console.log("says NOT in iframe");
     }
@@ -1325,6 +1457,9 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
         setTimeout(getMyName,5000);
     }
     
+    if ( localStorage[noThreadingTag] == "true" ) {
+        unthreadTest();        
+    }
     if (document.baseURI.match("#comment_") ) {
         var gotoComment=document.baseURI.split("#")[1];
         setTimeout(document.getElementById(gotoComment).scrollIntoView(true),2000);
@@ -1332,7 +1467,6 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
     else if (document.baseURI.match("#comment") ) {
         setTimeout(document.getElementById('comments').scrollIntoView(true),2000);
     }
-        
 }
 else if (location.pathname.substring(0,7).match(/\/blog\/?$/) && ! inIframe()) {
     console.log("I've done a little collage work myself");
