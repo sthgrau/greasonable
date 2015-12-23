@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.1
+// @version      0.9.4.7.3
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -26,6 +26,9 @@ function inIframe () {
 var lastGivenDate, commentCountText, commentsList, divDiv, dateInput, commentsScroller;
 
 var maxDatesPerPost=6;
+var myCharTablePage=0;
+var myCharTabNumRows=8;
+var myCharTabNumCols=16;
 var myIndex=0; // keep track of what the current date viewed is. List is sorted in reverse to latest is first (ie element 0)
 var pathString = 'visited-' + location.pathname; //made this global because it is now used when manually entering a date
 var userIgnoreList = 'reason-ignore-list';
@@ -39,6 +42,7 @@ var storyFontTag = 'reason-story-font';
 var localTzTag = 'reason-use-local-tz';
 var clearCommentTag = 'reason-show-clear-buttons';
 var noThreadingTag = 'reason-no-threading';
+var keyboardShowTag = 'reason-show-keyboard';
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
@@ -87,6 +91,9 @@ if ( typeof(localStorage[clearCommentTag]) == 'undefined' ) {
 }
 if ( typeof(localStorage[noThreadingTag]) == 'undefined' ) {
     localStorage[noThreadingTag] = false;
+}
+if ( typeof(localStorage[keyboardShowTag]) == 'undefined' ) {
+    localStorage[keyboardShowTag] = false;
 }
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
@@ -248,6 +255,7 @@ function makeMainCss() {
         '.new-comment .new-text { display: inline; }' +
         '.anchor-floater { position: fixed; top: 1; left: 1; bottom: 1; right: 1; margin: auto; width: 200px; height: 130px; padding: 2px 5px; background: rgba(250, 250, 250, 0.90);}' +
         '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+        '.keyboardFloater { position: fixed; right: 444px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
         '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 25vh; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.ufilters { width: 250px; height: 20vh; }' +
@@ -571,8 +579,8 @@ function makeOptionsForm() {
     miscBox.appendChild(document.createElement('br'));
     miscBox.appendChild(cc);
     miscBox.appendChild(cclab);
-    var nt=document.createElement('input');
 
+    var nt=document.createElement('input');
     nt.type='checkbox';
     nt.className='noThreadingCb';
     nt.value='0';
@@ -583,6 +591,17 @@ function makeOptionsForm() {
     miscBox.appendChild(nt);
     miscBox.appendChild(ntlab);
 
+    var kb=document.createElement('input');
+    kb.type='checkbox';
+    kb.className='keyboardShowCb';
+    kb.value='0';
+    kb.checked =  ( localStorage[keyboardShowTag] == "true"  ) ? true : false;
+    var kblab=document.createElement('label');
+    kblab.innerHTML='Show keyboard';
+    miscBox.appendChild(document.createElement('br'));
+    miscBox.appendChild(kb);
+    miscBox.appendChild(kblab);
+
     filterBox.appendChild(miscBox);
     
     
@@ -591,11 +610,13 @@ function makeOptionsForm() {
     filtHider.textContent = '[filters]';
     filtHider.className = 'filtHider';
     filtHider.addEventListener('click', function(){
+// var userIgnoreList = 'reason-ignore-list'; var commentIgnoreList = 'reason-comment-ignore-list';
         utext.value=localStorage[userIgnoreList].split('|').join("\n");
         ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
         cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
         cc.checked =  ( localStorage[clearCommentTag] == "true"  ) ? true : false;
         nt.checked =  ( localStorage[noThreadingTag] == "true"  ) ? true : false;
+        kb.checked =  ( localStorage[keyboardShowTag] == "true"  ) ? true : false;
         cbf.checked =  ( localStorage[filterTag] == "true"  ) ? true : false;
         fscb.checked =  ( localStorage[customFontTag] == "true"  ) ? true : false;
         ltzcb.checked = ( localStorage[localTzTag] == "true" ) ? true : false;
@@ -611,8 +632,8 @@ function makeOptionsForm() {
     subHider.className = 'subHider';
     subHider.style.display='none';
     subHider.addEventListener('click', function(){
-        localStorage[userIgnoreList] = utext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|");
-        localStorage[commentIgnoreList] = ctext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|");
+        localStorage[userIgnoreList] = utext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|").replace(/\|\|/g,"|").replace(/\|$/,"");
+        localStorage[commentIgnoreList] = ctext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|").replace(/\|\|/g,"|").replace(/\|$/,"");
         
         if ( localStorage[inlineYoutubeTag] == "true" && cb.checked == false ) {
             hideYouTube();
@@ -635,10 +656,17 @@ function makeOptionsForm() {
             
             fontOverride();
         }
+	if ( localStorage[keyboardShowTag] == "false" && kb.checked == true ) {
+	    document.getElementById("CharacterInputDiv").style.display="";
+	}
+	if ( localStorage[keyboardShowTag] == "true" && kb.checked == false ) {
+	    document.getElementById("CharacterInputDiv").style.display="none";
+	}
         
         localStorage[inlineYoutubeTag] = cb.checked;
         localStorage[clearCommentTag] = cc.checked;
         localStorage[noThreadingTag] = nt.checked;
+        localStorage[keyboardShowTag] = kb.checked;
         localStorage[filterTag] = cbf.checked;
         
         localStorage[localTzTag] = ltzcb.checked;
@@ -940,6 +968,8 @@ function createFormattingDiv() {
     citeTag.setAttribute('title', 'Cite text');
     citeTag.onclick = function(but) { 
         var form=but.target.parentElement.parentElement.parentElement;
+        console.log(form);
+        console.log(but);
         myFormatText("cite",form.getElementsByTagName('textarea')[0]); 
         return false; 
     };
@@ -998,6 +1028,7 @@ function myFormatText(tag,ta) {
       var cite="Reason";
       var pre="";
       var post="";
+      var citeTime="";
       if (comment.contains(document.getSelection().anchorNode)) {
           var li;
           var notli=document.getSelection().anchorNode;
@@ -1010,7 +1041,6 @@ function myFormatText(tag,ta) {
                   notli=li;
               }
           }
-          var citeTime="";
           if ( li.id != 'comments-in-tz' ) {
               if ( li.id == 'preview_content' || li.classList.contains('myPost') ) {
                   citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
@@ -1023,6 +1053,7 @@ function myFormatText(tag,ta) {
           }
       }
       if ( tag == "cite" ) {
+     //     console.log("A cite you say?");
           pre = "<cite>" + cite + " said";
           if ( citeTime.length > 0 ) {
               pre += " @" + citeTime;
@@ -1035,12 +1066,13 @@ function myFormatText(tag,ta) {
           post="</" + tag + ">";
       }
       var sel = window.getSelection();
+    //  console.log("raw selection = " + sel.toString());
       for (var i = 0, len = sel.rangeCount; i < len; ++i) {
         tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
       }
       reptext = reptext.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
       reptext = pre + reptext + post;
-      //console.log(reptext);
+     // console.log("selection text == " + reptext);
     }
     else {
         reptext="<" + tag + ">" + ta.value.substring(startPos, endPos) + "</" + tag + ">";
@@ -1211,10 +1243,11 @@ function makeNewText() {
         var myBodyLinks = myBody.getElementsByTagName('a');
         for (j=0; j < myBodyLinks.length; j++ ) {
             var myBodyLink = myBodyLinks[j].href;
+            var tmpSrc="";
             if ( document.URL.split(":")[0] == 'https' ) {
                 myBodyLink=myBodyLink.replace("http://","https://");
             }
-	    if ( myBodyLink.search("liveleak.com") > -1 ||  myBodyLink.search("vimeo.com") > -1 ) {
+            if ( myBodyLink.search("liveleak.com") > -1 ||  myBodyLink.search("vimeo.com") > -1 ) {
                 var newFrame = document.createElement('iframe');
                 if ( myBodyLink.search("vimeo.com") > -1 ) {
                     tmpSrc = myBodyLink.replace("/vimeo","/player.vimeo");
@@ -1227,43 +1260,56 @@ function makeNewText() {
                     newFrame.className="vimeo-player";
                     newFrame.title="Vimeo video player";
                 }
-		if ( myBodyLink.search("liveleak.com") > -1 ) {
-		    tmpSrc = myBodyLink.replace("/view","/ll_embed");
-		    tmpSrc = tmpSrc.replace("\?i","\?f");
+                if ( myBodyLink.search("liveleak.com") > -1 ) {
+                    tmpSrc = myBodyLink.replace("/view","/ll_embed");
+                    tmpSrc = tmpSrc.replace("\?i","\?f");
                     newFrame.className="liveleak-player";
                     newFrame.title="Liveleak video player";
-		}
+                }
                 newFrame.src = tmpSrc;
                 newFrame.frameBorder = 0;
                 newFrame.width=640;
                 newFrame.height=360;
                 myBody.appendChild(newFrame);
-	    }
+            myBodyLinks[j].title=tmpSrc;
+            }
             if ( myBodyLink.search("youtube.com") > -1 || myBodyLink.search("youtu.be") > -1 ) {
                 var newFrame = document.createElement('iframe');
                 var movId;
-                if ( myBodyLink.search("youtube.com") > -1 ) {
+                if ( myBodyLink.search("youtube.com") > -1 && myBodyLink.search("youtube.com/user") == -1 ) {
                     var tmpSrc=myBodyLink.replace("#t","&start");
                     var args=tmpSrc.split("?")[1].split("&");
-                    tmpSrc=tmpSrc.split("?")[0];
+                    tmpSrc=tmpSrc.split("?")[0].replace("watch","").replace("m.youtube.com","www.youtube.com");
                     var otargs=[];
                     for ( yti=0; yti < args.length; yti++ ) {
                         if ( args[yti].search("v=") === 0 ) {
-                            tmpSrc += "?" + args[yti];
+                          //  tmpSrc += "?" + args[yti];
                             movId=args[yti].split("=")[1];
                         }
-                        else if ( args[yti].startsWith("html5=") ) {
-                            ;
+                       // else if ( args[yti].startsWith("html5=") ) {
+                       //     ;
+                       // }
+                        else if ( args[yti].startsWith("t=") ) {
+                            otargs.push(args[yti].replace("t=","start="));
+                        }
+                        else if ( args[yti].startsWith("start=") || args[yti].startsWith("end=") ) {
+                           otargs.push(args[yti]);
                         }
                         else {
-                            otargs.push(args[yti]);
+                            //otargs.push(args[yti]);
                         }
                     }
-                    if ( otargs.length > 0 ) {
+                    otargs.push("rel=0");
+                    otargs.push("autoplay=0");
+                 /*   if ( otargs.length > 0 ) {
                         tmpSrc += "&" + otargs.join("&");
-                    }
+                    }*/
                   //  movId = myBodyLink.split("/")[3].split("=")[1];
-                    newFrame.src=tmpSrc.replace("watch?v=", "embed/");
+                    tmpSrc=tmpSrc + "embed/" + movId + "?" + otargs.join("&");
+                   // tmpSrc=tmpSrc.replace("watch?v=", "embed/");
+                   // tmpSrc=tmpSrc.replace("&t=", "?t=");
+                   // tmpSrc=tmpSrc.replace("&", "?");
+                    newFrame.src=tmpSrc;
                 }
                 else {
                     movId = myBodyLink.split("/")[3];
@@ -1285,8 +1331,11 @@ function makeNewText() {
                 newFrame.title="YouTube video player";
                 newFrame.width=640;
                 newFrame.height=360;
+                newFrame.frameborder=0;
+                newFrame.allowFullscreen=true;
                 newFrame.style.enabled = ( youtube == "true" ) ? '' : 'none';
                 myBody.appendChild(newFrame);
+            myBodyLinks[j].title=tmpSrc;
             }
         }
     }
@@ -1313,32 +1362,80 @@ function hideBastards() {
     var filter = localStorage[filterTag];
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
     var cs=document.getElementById('comments-scroller');
-    userIgnoreListText = localStorage[userIgnoreList].toLowerCase();
-    commentIgnoreListText = localStorage[commentIgnoreList].toLowerCase();
+    // commentIgnoreList='reason-comment-ignore-list' ; userIgnoreList = 'reason-ignore-list';
+    userIgnoreListText = localStorage[userIgnoreList];
+    userIgnoreEmailText = userIgnoreListText.split("|").filter(function (s) { return s.indexOf("@") !== -1 ;}).join("|");
+    userIgnoreEmailRegex = new RegExp(userIgnoreEmailText, "i");
+    userIgnoreLinkText = userIgnoreListText.split("|").filter(function (s) { return s.indexOf("htt") == 0 ;}).join("|");
+    userIgnoreLinkRegex = new RegExp(userIgnoreLinkText, "i");
+    userIgnoreNameRegex = new RegExp(userIgnoreListText, "i");
+    commentIgnoreListText = localStorage[commentIgnoreList];
+    commentIgnoreListRegex = new RegExp(commentIgnoreListText, "i");
+    masterListRegex = new RegExp(userIgnoreListText.concat("|" + commentIgnoreListText ), "i");
     if ( userIgnoreListText.length > 0 || commentIgnoreListText.length > 0 ) {
         for(var i=0; i<comments.length; i++) {
-            if ( filter == "true" && userIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(userIgnoreListText) > -1 )  {
-                var match = comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().match(userIgnoreListText);
+            var userBlock = comments[i].getElementsByClassName('meta')[0].childNodes[0];
+            var userLink="";
+            if ( userBlock.getElementsByTagName("a").length > 0 ) {
+                userName = userBlock.getElementsByTagName("a")[0].innerHTML;
+                userLink = userBlock.getElementsByTagName("a")[0].href;
+            }
+            else {
+                userName = userBlock.innerHTML;
+            }
+            //if ( filter == "true" && userIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(userIgnoreListText) > -1 )  {
+            if ( filter == "true" && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && 
+                    ( ( userIgnoreListText.length > 0 && userName.search(userIgnoreNameRegex) > -1 )  || 
+                     ( userIgnoreEmailText.length > 0 && userLink.search(userIgnoreEmailRegex) > -1 ) || 
+                      ( userIgnoreLinkText.length > 0 && userLink.search(userIgnoreLinkRegex) > -1 )  ) )  {
+                var whichList = userIgnoreNameRegex;
+                var matchType = "user";
+                var match = "unknown";
+                if (  userIgnoreEmailText.length > 0 && userLink.search(userIgnoreEmailRegex) > -1 ) {
+                    whichList = userIgnoreEmailRegex;
+                    matchType = "user email";
+                //    console.log("cnt = " + userIgnoreEmailText.length + " match = " +  userLink.search(userIgnoreEmailRegex) + " userLink = " + userLink);
+                    match = userLink.match(whichList);
+                }
+                else if ( userIgnoreLinkText.length > 0 && userLink.search(userIgnoreLinkRegex) > -1 ) {
+                    whichList = userIgnoreLinkRegex;
+                    matchType = "user link";
+                    match = userLink.match(whichList);
+                }
+                else {
+                    match = userName.match(whichList);
+                }
+               // var match = comments[i].getElementsByClassName('meta')[0].innerHTML.match(whichList);
                 var badMatch=comments[i].getElementsByClassName('bad-match')[0];
                 badMatch.style.display='';
-                badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (user): " + match + " ";
+                        badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (" + matchType +  "): " + match + " ";
                 comments[i].classList.add('hide-me');
                 comments[i].getElementsByClassName('comment-reply-link')[0].click();
             }
-            else if ( filter == "true" && commentIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('content')[0].innerHTML.toLowerCase().search(commentIgnoreListText) > -1 )  {
-                var match = comments[i].getElementsByClassName('content')[0].innerHTML.toLowerCase().match(commentIgnoreListText);
+            else if ( filter == "true" && commentIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden 
+                    && comments[i].getElementsByClassName('content')[0].innerHTML.search(commentIgnoreListRegex) > -1 )  {
+                var match = comments[i].getElementsByClassName('content')[0].innerHTML.match(commentIgnoreListRegex);
                 var badMatch=comments[i].getElementsByClassName('bad-match')[0];
                 badMatch.style.display='';
                 badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (content): " + match + " ";
                 comments[i].classList.add('hide-me');
                 comments[i].getElementsByClassName('comment-reply-link')[0].click();
             }
-            else if (comments[i].getElementsByClassName('comment-reply-link')[0].textContent == hidden) {
-                var badMatch=comments[i].getElementsByClassName('bad-match')[0];
-                badMatch.style.display='none';
-                badMatch.innerHTML = '';
-                comments[i].getElementsByClassName('comment-reply-link')[0].click();
+            // unhide comments that no longer match
+            else if (comments[i].getElementsByClassName('comment-reply-link')[0].textContent == hidden ) {
+                if ( ( comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[0].search("user email") > -1 &&
+                            comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[1].search(userIgnoreEmailRegex) == -1 ) ||
+                         ( comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[0].search("user link") > -1 &&
+                            comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[1].search(userIgnoreLinkRegex) == -1 ) ||
+                         ( comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[0].search("content") > -1 &&
+                            comments[i].getElementsByClassName('bad-match')[0].innerHTML.split("):")[1].search(commentIgnoreListRegex) == -1 ) ) {
+                    var badMatch=comments[i].getElementsByClassName('bad-match')[0];
+                    badMatch.style.display='none';
+                    badMatch.innerHTML = '';
+                    comments[i].getElementsByClassName('comment-reply-link')[0].click();
+                }
             }
+
 
             if ( comments[i].getElementsByClassName('bad-match')[0].style.display == '' || comments[i].style.display != '' ) {
                 if ( ele=document.getElementById('ncl-' + comments[i].id) ) {
@@ -1356,49 +1453,50 @@ function formatPostImageText() {
         postImgs=post[h].getElementsByClassName('addcaption');
         for(var i=0; i<postImgs.length; i++) {
             imgCap=postImgs[i].getElementsByClassName('caption')[0];
-	    var imgWidth = imgCap.parentNode.style["width"].replace("px","");
+            var imgWidth = imgCap.parentNode.style["width"].replace("px","");
             imgAlt=postImgs[i].getElementsByTagName('img')[0].alt;
             imgTitle=postImgs[i].getElementsByTagName('img')[0].title;
-	    if ( postImgs[i].getElementsByTagName('img')[0].alt.search("|||") > -1 ) {
+            if ( postImgs[i].getElementsByTagName('img')[0].alt.search("|||") > -1 ) {
                 cmpImgAlt=postImgs[i].getElementsByTagName('img')[0].alt.split(" |||")[0];
                 othImgAlt=postImgs[i].getElementsByTagName('img')[0].alt.split(" ||| ")[1];
-	    }
-	    else {
-	        cmpImgAlt=imgAlt;
-	    }
-	    if ( postImgs[i].getElementsByTagName('img')[0].title.search("|||") > -1 ) {
+            }
+            else {
+                cmpImgAlt=imgAlt;
+            }
+            if ( postImgs[i].getElementsByTagName('img')[0].title.search("|||") > -1 ) {
                 cmpImgTitle=postImgs[i].getElementsByTagName('img')[0].title.split(" |||")[0];
                 othImgTitle=postImgs[i].getElementsByTagName('img')[0].title.split(" ||| ")[1];
-	    }
-	    else {
-	        cmpImgTitle=imgTitle;
-	    }
+            }
+            else {
+                cmpImgTitle=imgTitle;
+            }
             if (imgAlt.length > 0 && cmpImgAlt.toLowerCase() != imgCap.innerHTML.toLowerCase() ) {
                 if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && cmpImgTitle.toLowerCase() != cmpImgAlt.toLowerCase()) {
                     imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" -- " + imgCap.innerHTML) : "");
                     imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" - " + imgCap.innerHTML) : "");
                 }
                 else {
-		    if ( imgCap.innerHTML == othImgAlt ) {
-		        imgCap.innerHTML = imgAlt;
-		    }
-		    else {
+                    if ( imgCap.innerHTML == othImgAlt ) {
+                        imgCap.innerHTML = imgAlt;
+                    }
+                    else {
                         imgCap.innerHTML = imgAlt + ((imgCap.innerHTML.length > 0 ) ? (" = " + imgCap.innerHTML) : "");
-		    }
+                    }
                 }
             }
+            
             else if (imgTitle.length > 0 && imgTitle.toLowerCase() != imgCap.innerHTML.toLowerCase() && imgTitle.toLowerCase() != imgAlt.toLowerCase()) {
                 imgCap.innerHTML = imgTitle + ((imgCap.innerHTML.length > 0 ) ? (" == " + imgCap.innerHTML) : "");
             }
-	    var tab=document.createElement("table");
-	    var row=document.createElement("row");
-	    var td=document.createElement("td");
-	    td.innerHTML=imgCap.innerHTML;
-	    td.width=imgWidth;
-	    row.appendChild(td);
-	    tab.appendChild(row);
-	    imgCap.parentNode.appendChild(tab);
-	    imgCap.style.display="none";
+            var tab=document.createElement("table");
+            var row=document.createElement("row");
+            var td=document.createElement("td");
+            td.innerHTML=imgCap.innerHTML;
+            td.width=imgWidth;
+            row.appendChild(td);
+            tab.appendChild(row);
+            imgCap.parentNode.appendChild(tab);
+            imgCap.style.display="none";
         }
     }
 }
@@ -1442,6 +1540,110 @@ function toggleIndent(array) {
     return newArray;
 }
 
+function makeCharacterThingy() {
+        // myCharTablePage=0; function refreshCharTablePage() { var myTab=document.getElementById("CharacterInputTable"); var cells=myTab.getElementsByTagName('td'); for ( var i=0; i<cells.length;i++) {var r=cells[i].id.split("row-")[1].split("-")[0]; var c=cells[i].id.split("-column-")[1]; var myCharTabNumCols=16; var myCharTabNumRows=8; cells[i].innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";}}
+	// myCharTablePage=0; var myCharTabNumRows=8; var myCharTabNumCols=16;
+        var myDiv=document.createElement('div');
+	if ( localStorage[keyboardShowTag] == "false" ) {
+	    myDiv.style.display="none";
+	}
+	myDiv.id="CharacterInputDiv";
+	myDiv.className="keyboardFloater";
+        var myTabDiv=document.createElement('div');
+	myTabDiv.id="CharacterInputTableDiv";
+	var myTab=document.createElement('table');
+	myTab.id="CharacterInputTable";
+	myTabDiv.appendChild(myTab);
+	myDiv.appendChild(myTabDiv);
+	document.body.appendChild(myDiv);
+
+	var titleRow=document.createElement("tr");
+	var titleHead=document.createElement("th");
+        titleRow.appendChild(titleHead);
+        myTab.appendChild(titleRow);
+
+        var first = document.createElement('span');
+        first.textContent = '|<< ';
+        first.setAttribute('title', 'Go to beginning');
+        first.className = 'firstChar';
+        first.addEventListener('click', function(){
+            myCharTablePage = 0;
+	    refreshCharTablePage();
+        }, false);
+
+        var prev = document.createElement('span');
+        prev.textContent = '<<';
+        prev.className = 'prevChar';
+        prev.setAttribute('title', 'Go to prev page');
+        prev.addEventListener('click', function(){
+            myCharTablePage = (myCharTablePage == 0 ) ? 0 : myCharTablePage - 1;
+	    console.log("my index = " + myCharTablePage);
+	    refreshCharTablePage();
+        }, false);
+
+        var next = document.createElement('span');
+        next.textContent = '>>';
+        next.className = 'nextChar';
+        next.setAttribute('title', 'Go to next page');
+        next.addEventListener('click', function(){
+            myCharTablePage = myCharTablePage + 1;
+	    console.log("my index = " + myCharTablePage);
+	    refreshCharTablePage();
+        }, false);
+
+        var hide = document.createElement('span');
+        hide.textContent = '<Toggle Keyboard>';
+        hide.className = 'toggleKeyboard';
+        hide.addEventListener('click', function(){
+	    myTable = document.getElementById('CharacterInputTable');
+	    myTable.style.display = ( myTable.style.display == "none") ? "" : "none";
+        }, false);
+	titleHead.appendChild(first);
+	titleHead.appendChild(prev);
+	titleHead.appendChild(next);
+	myTabDiv.parentNode.appendChild(hide);
+
+	
+	titleHead.colSpan=myCharTabNumCols;
+	for ( var r=0; r < myCharTabNumRows; r++) {
+	    var myRow=document.createElement('tr');
+	    myTab.appendChild(myRow);
+	    for ( var c=0; c < myCharTabNumCols; c++ ) {
+	        var myCell=document.createElement('td');
+	        myRow.appendChild(myCell);
+	        myCell.id="CharTab-row-" + r + "-column-" + c;
+	        myCell.className="column-" + c;
+		myCell.width=12;
+		myCell.height=12;
+		var cellBut=document.createElement('button');
+                cellBut.id="charCell-" + (myCharTabNumCols*r+c);
+                cellBut.onclick = function(but) { 
+		    var cellId=parseInt(this.id.split("charCell-")[1]);
+                    var form=document.getElementsByClassName('leave-comment')[0].getElementsByTagName('form')[0];
+                    //var form=but.target.parentElement.parentElement.parentElement;
+                    form.getElementsByTagName('textarea')[0].value += "&#" + (cellId+32+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";"; 
+                    return false; 
+                };
+               // cellBut.innerHTML="&lt;cite>";
+		cellBut.innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";
+                myCell.appendChild(cellBut);
+	    }
+	}
+	//mything=document.getElementsByTagName('textarea')[0]; mything.parentNode.appendChild(myDiv)
+}
+
+function refreshCharTablePage() {
+    var myTab=document.getElementById("CharacterInputTable");
+    var cells=myTab.getElementsByTagName('td');
+    for ( var i=0; i<cells.length;i++) {
+        var r=parseInt(cells[i].id.split("row-")[1].split("-")[0]);
+	var c=parseInt(cells[i].id.split("-column-")[1]);
+	var charNum=((32)+(c)+(r*myCharTabNumCols)+(myCharTablePage*myCharTabNumCols*myCharTabNumRows));
+//	console.log("r=" + r + " c=" + c + " charNum = " + charNum);
+	cells[i].getElementsByTagName('button')[0].innerHTML="&#" + charNum + ";";
+    }
+}
+
 // Run iff we're on a page which looks like a post
 if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/reasontv/') || (location.pathname.substring(0,10) == '/brickbat/')) && ! inIframe() ) {
     if ( ! inIframe() ) {
@@ -1453,6 +1655,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
     
     
     console.log("time to make the donuts");
+    makeCharacterThingy();
     formatPostImageText();
     makeHighlight();
     makeOptionsForm();
@@ -1460,6 +1663,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
     makeNewText();
     createFormattingDiv();
     hideBastards();
+
     for(var m=0;m<3;m++ ) {
         setTimeout(getMyName,5000);
     }
