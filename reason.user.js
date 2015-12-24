@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.3
+// @version      0.9.4.7.5
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -255,7 +255,7 @@ function makeMainCss() {
         '.new-comment .new-text { display: inline; }' +
         '.anchor-floater { position: fixed; top: 1; left: 1; bottom: 1; right: 1; margin: auto; width: 200px; height: 130px; padding: 2px 5px; background: rgba(250, 250, 250, 0.90);}' +
         '.comments-floater { position: fixed; right: 4px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
-        '.keyboardFloater { position: fixed; right: 444px; top: 4px; padding: 2px 5px; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+        '.keyboardFloater { position: fixed; right: 180px; top: 244px; padding: 2px 5px; width: 200px;font-size: 12px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
         '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 25vh; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.ufilters { width: 250px; height: 20vh; }' +
