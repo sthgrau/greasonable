@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.7
+// @version      0.9.4.7.8
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -1211,6 +1211,13 @@ function returnFormattedDateString2(tx2,txstring) {
     return datestring;
 }
 
+function timeToSeconds(input) {
+    var hrs= (input.match(/[0-9]h/i) ) ? parseInt(input.match(/([0-9]*)h/i)[1]) : 0;
+    var mins= (input.match(/[0-9]m/i) ) ? parseInt(input.match(/([0-9]*)m/i)[1]) : 0;
+    var secs= (input.match(/[0-9]s/i) ) ? parseInt(input.match(/([0-9]*)s/i)[1]) : 0;
+    return hrs * 3600 + mins * 60 + secs;
+}
+
 function makeNewText() {
     // *** Add ~new~ to new comments
     
@@ -1328,10 +1335,13 @@ function makeNewText() {
                        //     ;
                        // }
                         else if ( args[yti].startsWith("t=") ) {
-                            otargs.push(args[yti].replace("t=","start="));
+                            var newtime = (args[yti].split("=")[1].match(/h|m|s/) ) ? timeToSeconds(args[yti].split("=")[1]) : args[yti].split("=")[1];
+                            otargs.push("start=" + newtime);
+                          //  otargs.push(args[yti].replace("t=","start="));
                         }
                         else if ( args[yti].startsWith("start=") || args[yti].startsWith("end=") ) {
-                           otargs.push(args[yti]);
+                            var newtime = (args[yti].split("=")[1].match(/h|m|s/) ) ? timeToSeconds(args[yti].split("=")[1]) : args[yti].split("=")[1];
+                            otargs.push(args[yti].split("=")[0] + "=" + newtime);
                         }
                         else {
                             //otargs.push(args[yti]);
@@ -1352,6 +1362,10 @@ function makeNewText() {
                 else {
                     movId = myBodyLink.split("/")[3];
                     newFrame.src=myBodyLink.replace("youtu.be/", "www.youtube.com/embed/").replace("?t","?start");
+                    if ( newFrame.src.match(/start=[0-9hms]/) ) {
+                        var newtime=timeToSeconds(newFrame.src.match(/start=([0-9hms]*)/)[1]);
+                        newFrame.src=newFrame.src.replace(/start=[0-9hms]*/, "start=" + newtime);
+                    }
                 }
                 newFrame.id = "player";
                 var tag = document.createElement('script');
