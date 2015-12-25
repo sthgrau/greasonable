@@ -9,6 +9,7 @@ Also tested with pale moon with greasemonkey..
 Features:
 <UL>
 <LI>Added a keyboard to add strange characters.. Off by default. Enable by checking box in the "Misc" tab in "Filters"</LI>
+<LI>Added gravatar display. Off by default. Enable by checking box in the "Misc" tab in "Filters"</LI>
 <LI>Ability to go back to the last 5 refresh times in case you accidentally refresh before finishing.</LI>
 <LI>Thread hiding (or at least adapted for reason).</LI>
 <LI>Some basic filtering (whole message for now) which auto hides threads that match, not just individual messages.. (this is the main thing I wanted). NOTE: basic filtering supports regex.</LI>

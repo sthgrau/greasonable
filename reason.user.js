@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.5
+// @version      0.9.4.7.7
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -29,6 +29,7 @@ var maxDatesPerPost=6;
 var myCharTablePage=0;
 var myCharTabNumRows=8;
 var myCharTabNumCols=16;
+var globalIsFlat=0;
 var myIndex=0; // keep track of what the current date viewed is. List is sorted in reverse to latest is first (ie element 0)
 var pathString = 'visited-' + location.pathname; //made this global because it is now used when manually entering a date
 var userIgnoreList = 'reason-ignore-list';
@@ -43,6 +44,8 @@ var localTzTag = 'reason-use-local-tz';
 var clearCommentTag = 'reason-show-clear-buttons';
 var noThreadingTag = 'reason-no-threading';
 var keyboardShowTag = 'reason-show-keyboard';
+var gravatarShowTag = 'reason-show-gravatar';
+var gravatarSize=20;
 var ytLoaded=0;
 var unhidden="Hide thread";
 var hidden="Unhide thread";
@@ -95,6 +98,9 @@ if ( typeof(localStorage[noThreadingTag]) == 'undefined' ) {
 if ( typeof(localStorage[keyboardShowTag]) == 'undefined' ) {
     localStorage[keyboardShowTag] = false;
 }
+if ( typeof(localStorage[gravatarShowTag]) == 'undefined' ) {
+    localStorage[gravatarShowTag] = false;
+}
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
 }
@@ -122,7 +128,15 @@ function border(since, updateTitle) {
     // Walk comments, setting borders as appropriate and saving new comments in a list
     for(var i = 0; i < comments.length; i++) {
         myReplyId = comments[i].id;
-        myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+        if ( localStorage[gravatarShowTag] == "true" ) {
+            var myImg = document.createElement("img");
+            myImg.src = "https://www.gravatar.com/avatar/" + comments[i].getAttribute("data-user-id") + "?d=identicon&s=" + gravatarSize;
+            myImg.className = "gravatars";
+            myImg.title = comments[i].getAttribute("data-user-id");
+            comments[i].getElementsByClassName("meta")[0].insertBefore(myImg,comments[i].getElementsByClassName("meta")[0].children[0]);
+        }
+       // myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+        myReplyNum = parseInt(comments[i].className.match(/reply[0-9]/)[0].replace("reply",""));
         parentStack[myReplyNum] = myReplyId;
         var commenter;
         if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
@@ -139,7 +153,7 @@ function border(since, updateTitle) {
             myReplies.push(myReplyId);
         }
         var replyToMe=0;
-        var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
+      //  var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
         var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
         if (postTime > since) {
             comments[i].classList.add('new-comment');
@@ -602,6 +616,17 @@ function makeOptionsForm() {
     miscBox.appendChild(kb);
     miscBox.appendChild(kblab);
 
+    var gt=document.createElement('input');
+    gt.type='checkbox';
+    gt.className='gravatarShowCb';
+    gt.value='0';
+    gt.checked =  ( localStorage[gravatarShowTag] == "true"  ) ? true : false;
+    var gtlab=document.createElement('label');
+    gtlab.innerHTML='Show gravatar';
+    miscBox.appendChild(document.createElement('br'));
+    miscBox.appendChild(gt);
+    miscBox.appendChild(gtlab);
+
     filterBox.appendChild(miscBox);
     
     
@@ -617,6 +642,7 @@ function makeOptionsForm() {
         cc.checked =  ( localStorage[clearCommentTag] == "true"  ) ? true : false;
         nt.checked =  ( localStorage[noThreadingTag] == "true"  ) ? true : false;
         kb.checked =  ( localStorage[keyboardShowTag] == "true"  ) ? true : false;
+        gt.checked =  ( localStorage[gravatarShowTag] == "true"  ) ? true : false;
         cbf.checked =  ( localStorage[filterTag] == "true"  ) ? true : false;
         fscb.checked =  ( localStorage[customFontTag] == "true"  ) ? true : false;
         ltzcb.checked = ( localStorage[localTzTag] == "true" ) ? true : false;
@@ -656,17 +682,26 @@ function makeOptionsForm() {
             
             fontOverride();
         }
-	if ( localStorage[keyboardShowTag] == "false" && kb.checked == true ) {
-	    document.getElementById("CharacterInputDiv").style.display="";
-	}
-	if ( localStorage[keyboardShowTag] == "true" && kb.checked == false ) {
-	    document.getElementById("CharacterInputDiv").style.display="none";
-	}
+        if ( localStorage[keyboardShowTag] == "false" && kb.checked == true ) {
+            document.getElementById("CharacterInputDiv").style.display="";
+        }
+        if ( localStorage[keyboardShowTag] == "true" && kb.checked == false ) {
+            document.getElementById("CharacterInputDiv").style.display="none";
+        }
+        /*
+        if ( localStorage[gravatarShowTag] == "false" && gt.checked == true ) {
+            document.getElementById("gravatars").style.display="";
+        }
+        if ( localStorage[gravatarShowTag] == "true" && kb.checked == false ) {
+            document.getElementById("gravatars").style.display="none";
+        }
+        */
         
         localStorage[inlineYoutubeTag] = cb.checked;
         localStorage[clearCommentTag] = cc.checked;
         localStorage[noThreadingTag] = nt.checked;
         localStorage[keyboardShowTag] = kb.checked;
+        localStorage[gravatarShowTag] = gt.checked;
         localStorage[filterTag] = cbf.checked;
         
         localStorage[localTzTag] = ltzcb.checked;
@@ -735,7 +770,8 @@ function makeShowHide() {
     }
     for (var i = 0; i < comments.length; ++i) {
         myReplyId = comments[i].id;
-        myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+       // myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
+        myReplyNum = parseInt(comments[i].className.match(/reply[0-9]/)[0].replace("reply",""));
         parentStack[myReplyNum] = myReplyId;
 /*
         var commenter;
@@ -1193,7 +1229,8 @@ function makeNewText() {
     }
     
     for(var i=0; i<comments.length; ++i) {
-        var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
+       // var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
+        var myReplyNum=parseInt(comments[i].className.match(/reply[0-9]/)[0].replace("reply",""));
         var badMatch = document.createElement('p');
         badMatch.className = 'bad-match';
         badMatch.style.display = 'none';
@@ -1223,8 +1260,9 @@ function makeNewText() {
         }
         meta.appendChild(commentId);
         
-        if ( comments[i].classList.toString().match(/parent-comment_[0-9]*/) ) {
-            var gotoComment = comments[i].classList.toString().match(/parent-comment_[0-9]*/)[0].split("-")[1];
+      //  if ( comments[i].classList.toString().match(/parent-comment_[0-9]*/) ) {
+        if ( comments[i].className.match(/parent-comment_[0-9]*/) ) {
+            var gotoComment = comments[i].className.match(/parent-comment_[0-9]*/)[0].split("-")[1];
             var parentBut = document.createElement('button');
             parentBut.id = 'jumpFrom' + comments[i].id;
             parentBut.className = 'parentButton';
@@ -1542,23 +1580,23 @@ function toggleIndent(array) {
 
 function makeCharacterThingy() {
         // myCharTablePage=0; function refreshCharTablePage() { var myTab=document.getElementById("CharacterInputTable"); var cells=myTab.getElementsByTagName('td'); for ( var i=0; i<cells.length;i++) {var r=cells[i].id.split("row-")[1].split("-")[0]; var c=cells[i].id.split("-column-")[1]; var myCharTabNumCols=16; var myCharTabNumRows=8; cells[i].innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";}}
-	// myCharTablePage=0; var myCharTabNumRows=8; var myCharTabNumCols=16;
+        // myCharTablePage=0; var myCharTabNumRows=8; var myCharTabNumCols=16;
         var myDiv=document.createElement('div');
-	if ( localStorage[keyboardShowTag] == "false" ) {
-	    myDiv.style.display="none";
-	}
-	myDiv.id="CharacterInputDiv";
-	myDiv.className="keyboardFloater";
+        if ( localStorage[keyboardShowTag] == "false" ) {
+            myDiv.style.display="none";
+        }
+        myDiv.id="CharacterInputDiv";
+        myDiv.className="keyboardFloater";
         var myTabDiv=document.createElement('div');
-	myTabDiv.id="CharacterInputTableDiv";
-	var myTab=document.createElement('table');
-	myTab.id="CharacterInputTable";
-	myTabDiv.appendChild(myTab);
-	myDiv.appendChild(myTabDiv);
-	document.body.appendChild(myDiv);
+        myTabDiv.id="CharacterInputTableDiv";
+        var myTab=document.createElement('table');
+        myTab.id="CharacterInputTable";
+        myTabDiv.appendChild(myTab);
+        myDiv.appendChild(myTabDiv);
+        document.body.appendChild(myDiv);
 
-	var titleRow=document.createElement("tr");
-	var titleHead=document.createElement("th");
+        var titleRow=document.createElement("tr");
+        var titleHead=document.createElement("th");
         titleRow.appendChild(titleHead);
         myTab.appendChild(titleRow);
 
@@ -1568,7 +1606,7 @@ function makeCharacterThingy() {
         first.className = 'firstChar';
         first.addEventListener('click', function(){
             myCharTablePage = 0;
-	    refreshCharTablePage();
+            refreshCharTablePage();
         }, false);
 
         var prev = document.createElement('span');
@@ -1577,8 +1615,8 @@ function makeCharacterThingy() {
         prev.setAttribute('title', 'Go to prev page');
         prev.addEventListener('click', function(){
             myCharTablePage = (myCharTablePage == 0 ) ? 0 : myCharTablePage - 1;
-	    console.log("my index = " + myCharTablePage);
-	    refreshCharTablePage();
+            console.log("my index = " + myCharTablePage);
+            refreshCharTablePage();
         }, false);
 
         var next = document.createElement('span');
@@ -1587,49 +1625,49 @@ function makeCharacterThingy() {
         next.setAttribute('title', 'Go to next page');
         next.addEventListener('click', function(){
             myCharTablePage = myCharTablePage + 1;
-	    console.log("my index = " + myCharTablePage);
-	    refreshCharTablePage();
+            console.log("my index = " + myCharTablePage);
+            refreshCharTablePage();
         }, false);
 
         var hide = document.createElement('span');
         hide.textContent = '<Toggle Keyboard>';
         hide.className = 'toggleKeyboard';
         hide.addEventListener('click', function(){
-	    myTable = document.getElementById('CharacterInputTable');
-	    myTable.style.display = ( myTable.style.display == "none") ? "" : "none";
+            myTable = document.getElementById('CharacterInputTable');
+            myTable.style.display = ( myTable.style.display == "none") ? "" : "none";
         }, false);
-	titleHead.appendChild(first);
-	titleHead.appendChild(prev);
-	titleHead.appendChild(next);
-	myTabDiv.parentNode.appendChild(hide);
+        titleHead.appendChild(first);
+        titleHead.appendChild(prev);
+        titleHead.appendChild(next);
+        myTabDiv.parentNode.appendChild(hide);
 
-	
-	titleHead.colSpan=myCharTabNumCols;
-	for ( var r=0; r < myCharTabNumRows; r++) {
-	    var myRow=document.createElement('tr');
-	    myTab.appendChild(myRow);
-	    for ( var c=0; c < myCharTabNumCols; c++ ) {
-	        var myCell=document.createElement('td');
-	        myRow.appendChild(myCell);
-	        myCell.id="CharTab-row-" + r + "-column-" + c;
-	        myCell.className="column-" + c;
-		myCell.width=12;
-		myCell.height=12;
-		var cellBut=document.createElement('button');
+        
+        titleHead.colSpan=myCharTabNumCols;
+        for ( var r=0; r < myCharTabNumRows; r++) {
+            var myRow=document.createElement('tr');
+            myTab.appendChild(myRow);
+            for ( var c=0; c < myCharTabNumCols; c++ ) {
+                var myCell=document.createElement('td');
+                myRow.appendChild(myCell);
+                myCell.id="CharTab-row-" + r + "-column-" + c;
+                myCell.className="column-" + c;
+                myCell.width=12;
+                myCell.height=12;
+                var cellBut=document.createElement('button');
                 cellBut.id="charCell-" + (myCharTabNumCols*r+c);
                 cellBut.onclick = function(but) { 
-		    var cellId=parseInt(this.id.split("charCell-")[1]);
+                    var cellId=parseInt(this.id.split("charCell-")[1]);
                     var form=document.getElementsByClassName('leave-comment')[0].getElementsByTagName('form')[0];
                     //var form=but.target.parentElement.parentElement.parentElement;
                     form.getElementsByTagName('textarea')[0].value += "&#" + (cellId+32+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";"; 
                     return false; 
                 };
                // cellBut.innerHTML="&lt;cite>";
-		cellBut.innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";
+                cellBut.innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";
                 myCell.appendChild(cellBut);
-	    }
-	}
-	//mything=document.getElementsByTagName('textarea')[0]; mything.parentNode.appendChild(myDiv)
+            }
+        }
+        //mything=document.getElementsByTagName('textarea')[0]; mything.parentNode.appendChild(myDiv)
 }
 
 function refreshCharTablePage() {
@@ -1637,10 +1675,10 @@ function refreshCharTablePage() {
     var cells=myTab.getElementsByTagName('td');
     for ( var i=0; i<cells.length;i++) {
         var r=parseInt(cells[i].id.split("row-")[1].split("-")[0]);
-	var c=parseInt(cells[i].id.split("-column-")[1]);
-	var charNum=((32)+(c)+(r*myCharTabNumCols)+(myCharTablePage*myCharTabNumCols*myCharTabNumRows));
-//	console.log("r=" + r + " c=" + c + " charNum = " + charNum);
-	cells[i].getElementsByTagName('button')[0].innerHTML="&#" + charNum + ";";
+        var c=parseInt(cells[i].id.split("-column-")[1]);
+        var charNum=((32)+(c)+(r*myCharTabNumCols)+(myCharTablePage*myCharTabNumCols*myCharTabNumRows));
+//        console.log("r=" + r + " c=" + c + " charNum = " + charNum);
+        cells[i].getElementsByTagName('button')[0].innerHTML="&#" + charNum + ";";
     }
 }
 
