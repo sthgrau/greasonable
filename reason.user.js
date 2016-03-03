@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.9
+// @version      0.9.4.7.10
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -1318,7 +1318,7 @@ function makeNewText() {
                 myBody.appendChild(newFrame);
             myBodyLinks[j].title=tmpSrc;
             }
-            if ( ( myBodyLink.search("youtube.com") > -1 || myBodyLink.search("youtu.be") > -1 ) && ( myBodyLink.search("channel") == -1 )) {
+            if ( ( myBodyLink.search("youtube.com") > -1 || myBodyLink.search("youtu.be") > -1 )) { // && ( myBodyLink.search("channel") == -1 )
                 var newFrame = document.createElement('iframe');
                 var movId;
                 if ( myBodyLink.search("youtube.com") > -1 && myBodyLink.search("youtube.com/user") == -1 ) {
