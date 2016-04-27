@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.8
+// @version      0.9.4.8.1
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -104,7 +104,7 @@ if ( typeof(localStorage[gravatarShowTag]) == 'undefined' ) {
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
 }
-localStorage[localTzTag] = true;
+//localStorage[localTzTag] = true;
 
 //damn autoplay ads
 
