@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.7.10
+// @version      0.9.4.8
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
@@ -154,7 +154,8 @@ function border(since, updateTitle) {
         }
         var replyToMe=0;
       //  var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
-        var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
+       // var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
+        var postTime = parseInt(comments[i].getAttributeNode('data-comment-timestamp').value) * 1000;
         if (postTime > since) {
             comments[i].classList.add('new-comment');
             if (myReplies.indexOf(comments[i].id) > -1 ) {
@@ -265,6 +266,7 @@ function makeMainCss() {
         'a { color: #f37221 !important; }' + 
         '.commentId { color: #C5C5C5; }' +
         '.bad-match { color: #C5C5C5; }' +
+        '.errorDisplayDiv { color: #FF3535; }' +
         '.new-text { color: #C5C5C5; display: none; }' +
         '.new-comment .new-text { display: inline; }' +
         '.anchor-floater { position: fixed; top: 1; left: 1; bottom: 1; right: 1; margin: auto; width: 200px; height: 130px; padding: 2px 5px; background: rgba(250, 250, 250, 0.90);}' +
@@ -533,7 +535,7 @@ function makeOptionsForm() {
     miscBox.appendChild(cbf);
     miscBox.appendChild(labf);
     
-    // miscBox.appendChild(document.createElement('br'));
+    miscBox.appendChild(document.createElement('br'));
     var ltzcb=document.createElement('input');
     ltzcb.type='checkbox';
     ltzcb.className='localTzCb';
@@ -541,8 +543,8 @@ function makeOptionsForm() {
     ltzcb.checked =  ( localStorage[localTzTag] == "true" ) ? true : false;
     var labltz=document.createElement('label');
     labltz.innerHTML='Use your Time';
-    //miscBox.appendChild(ltzcb);
-    // miscBox.appendChild(labltz);
+    miscBox.appendChild(ltzcb);
+    miscBox.appendChild(labltz);
     
     var storyFontSelectLab=document.createElement('label');
     storyFontSelectLab.innerHTML='Story font';
@@ -851,39 +853,51 @@ function setFormId(that) {
             url: $(this).attr('action'),
             data: $('#form-' + id).serializeArray(),
             timeout: 3000,
-            success: function() {
+            success: function(resp, textStatus, request) {
                 console.log($('#form-' + id));
                 var newid=li.id + globnum++;
+
+                var testErr = $(resp).find('.error');
                 ///$(this).parentElement.style.display='none';
                 // fwiw, duplicate post bug not in pseudo posting code
-                var newli=document.createElement('li');
-                newli.className=li.className.concat(" parent-" + li.id);
-                var oldReplyClass = li.className.match(/reply[0-9]/)[0];
-                if (oldReplyClass != 'reply5' ) {
-                    newReplyClass="reply" + (parseInt(oldReplyClass.replace("reply","")) + 1);
-                    newli.className=newli.className.replace(oldReplyClass,newReplyClass);
+                if ( testErr.length == 0 ) {
+                  var newli=document.createElement('li');
+                  newli.className=li.className.concat(" parent-" + li.id);
+                  var oldReplyClass = li.className.match(/reply[0-9]/)[0];
+                  if (oldReplyClass != 'reply5' ) {
+                      newReplyClass="reply" + (parseInt(oldReplyClass.replace("reply","")) + 1);
+                      newli.className=newli.className.replace(oldReplyClass,newReplyClass);
+                  }
+                  newli.id=newid;
+                  console.log(newli.id);
+                  var newmeta=document.createElement('p');
+                  newmeta.className='meta';
+                  newmeta.innerHTML="you, of course | @now | #";
+                  var newtextspan = document.createElement('span');
+                  newtextspan.className='new-text';
+                  newtextspan.innerHTML='~new~ ~async~';
+                  newmeta.appendChild(newtextspan);
+                  newli.appendChild(newmeta);
+                  var newcontent=document.createElement('div');
+                  newcontent.className='content';
+                  newcontent.innerHTML=$('#form-' + id)[0].getElementsByTagName('textarea')[0].value;
+                  newli.appendChild(newcontent);
+                  li.parentNode.insertBefore(newli, li.nextSibling);
+                  $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
+                  if ( document.getElementById('preview_content') != null ) {
+                    document.getElementById('preview_content').remove();
+                  }
+                  document.getElementsByClassName('errorDisplayDiv')[0].innerHTML="";
+                  $('#form-' + id)[0].parentElement.style.display='none';
                 }
-                newli.id=newid;
-                console.log(newli.id);
-                var newmeta=document.createElement('p');
-                newmeta.className='meta';
-                newmeta.innerHTML="you, of course | @now | #";
-                var newtextspan = document.createElement('span');
-                newtextspan.className='new-text';
-                newtextspan.innerHTML='~new~ ~async~';
-                newmeta.appendChild(newtextspan);
-                newli.appendChild(newmeta);
-                var newcontent=document.createElement('div');
-                newcontent.className='content';
-                newcontent.innerHTML=$('#form-' + id)[0].getElementsByTagName('textarea')[0].value;
-                newli.appendChild(newcontent);
-                li.parentNode.insertBefore(newli, li.nextSibling);
-                $('#form-' + id)[0].getElementsByTagName('textarea')[0].value="";
-                if ( document.getElementById('preview_content') != null ) {
-                  document.getElementById('preview_content').remove();
+                else {
+                    document.getElementsByClassName('errorDisplayDiv')[0].innerHTML=testErr[0].getElementsByTagName('li')[0].innerHTML;
+              //      alert("Submit failed with: " + testErr[0].getElementsByTagName('li')[0].innerHTML);
                 }
-                $('#form-' + id)[0].parentElement.style.display='none';
-                // Whatever you want here, like close dialog box, etc. 
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                console.log("Status: " + textStatus + "Error: " + errorThrown);
+            // alert("Status: " + textStatus + "Error: " + errorThrown); 
             }
         });
         return false;
@@ -925,6 +939,12 @@ function createFormattingDiv() {
         updateNumCharsInElement(x.target.value,cc,maxCommentLength);
     }
     ta.parentElement.appendChild(ccdiv);
+    var errdiv=document.createElement('div');
+    errdiv.id='error' + id;
+    errdiv.className='errorDisplayDiv';
+    errdiv.innerHTML="";
+    ta.parentElement.appendChild(errdiv);
+    
     
     var sfc;
     if (!ta.contains(document.getElementById('span-form-controls'))) {
@@ -1079,11 +1099,14 @@ function myFormatText(tag,ta) {
           }
           if ( li.id != 'comments-in-tz' ) {
               if ( li.id == 'preview_content' || li.classList.contains('myPost') ) {
-                  citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  citeTime=returnFormattedDateString(new Date(li.getAttributeNode('data-comment-timestamp').value * 1000)).split(" ")[1];
                   cite="I";
               }
               else if ( li.classList.contains('com-block') ) {
-                  citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
+                  citeTime=returnFormattedDateString(new Date(li.getAttributeNode('data-comment-timestamp').value * 1000)).split(" ")[1];
                   cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
               }
           }
@@ -1231,6 +1254,7 @@ function makeNewText() {
     
     var storyTime=document.getElementsByClassName('mainheading')[0].getElementsByTagName('time')[0];
     if ( typeof(storyTime) != 'undefined' && localStorage[localTzTag] == 'true' ) {
+        //also fine for now
         storyTime.innerHTML=returnFormattedDateString(new Date(storyTime.getAttributeNode('datetime').value));
         // storyTime.innerHTML=returnFormattedDateString2(storyTime.getAttributeNode('datetime').value, storyTime.innerHTML);
     }
@@ -1260,7 +1284,8 @@ function makeNewText() {
 
         var meta = comments[i].querySelector('p.meta');
         t=meta.getElementsByTagName('time')[0];
-        tx=new Date(t.getAttributeNode('datetime').value);
+        //tx=new Date(t.getAttributeNode('datetime').value);
+        tx=new Date(comments[i].getAttributeNode('data-comment-timestamp').value * 1000)
         var datestring = returnFormattedDateString(tx);
         if ( localStorage[localTzTag] == 'true' ) {
             t.innerHTML=datestring;
@@ -1739,6 +1764,7 @@ else if (location.pathname.substring(0,7).match(/\/blog\/?$/) && ! inIframe()) {
     fontOverride();
     var storyTimes=document.getElementsByClassName('mainheading');
     for (var e=0; e<storyTimes.length;e++) {
+        //this is fine for some reason
         storyTime=storyTimes[e].getElementsByTagName('time')[0];
         if ( typeof(storyTime) != 'undefined' && localStorage[localTzTag] == 'true' ) {
             storyTime.innerHTML=returnFormattedDateString(new Date(storyTime.getAttributeNode('datetime').value));
