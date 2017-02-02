@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.4.8.2
+// @version      0.9.4.8.3
 // @description  does something useful
 // @author       Me
 // @match        http*://reason.com/*
+// @include      http*://reason.com/*
 // @grant        none
 // ==/UserScript==
 
