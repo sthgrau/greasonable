@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
+<<<<<<< HEAD
+// @version      0.9.5.1
+=======
 // @version      0.9.4.8.3
+>>>>>>> 2ae8421db6f3b7b0f14e6d3c58d6d5f0a54df057
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
@@ -32,6 +36,7 @@ var myCharTabNumCols=16;
 var globalIsFlat=0;
 var myIndex=0; // keep track of what the current date viewed is. List is sorted in reverse to latest is first (ie element 0)
 var pathString = 'visited-' + location.pathname; //made this global because it is now used when manually entering a date
+var storyIgnoreList = 'reason-story-ignore-list';
 var userIgnoreList = 'reason-ignore-list';
 var commentIgnoreList = 'reason-comment-ignore-list';
 var myNameTag = 'reason-user-name';
@@ -47,6 +52,7 @@ var keyboardShowTag = 'reason-show-keyboard';
 var gravatarShowTag = 'reason-show-gravatar';
 var gravatarSize=20;
 var ytLoaded=0;
+var sunhide="Toggle Story";
 var unhidden="Hide thread";
 var hidden="Unhide thread";
 var myComments=[];
@@ -67,6 +73,9 @@ var myName="anonymousHRuserYouAreAdickifYouusethishandle";
 if ( typeof(localStorage[myNameTag]) != 'undefined' ) {
     myName = localStorage[myNameTag];
     console.log("Setting my name to " + myName);
+}
+if ( typeof(localStorage[storyIgnoreList]) == 'undefined' ) {
+    localStorage[storyIgnoreList] = "";
 }
 if ( typeof(localStorage[userIgnoreList]) == 'undefined' ) {
     localStorage[userIgnoreList] = "buttplug|shrike|gambol|tony";
@@ -274,6 +283,7 @@ function makeMainCss() {
         '.keyboardFloater { position: fixed; right: 180px; top: 244px; padding: 2px 5px; width: 200px;font-size: 12px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
         '.show-filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; }' +
         '.filter-floater { position: fixed; right: 4px; bottom: 0px; margin-bottom:0px; padding: 2px 5px; height: 25vh; width: 250px;font-size: 14px; border-radius: 5px; background: rgba(250, 250, 250, 0.90); }' +
+        '.sfilters { width: 250px; height: 20vh; }' +
         '.ufilters { width: 250px; height: 20vh; }' +
         '.cfilters { width: 250px; height: 20vh; }' +
         '.miscfilters { width: 250px; height: 19vh; }' +
@@ -286,8 +296,9 @@ function makeMainCss() {
         '.date-input { width: 100%; box-sizing: border-box; }' +
         '.input-span { width: 100%; padding-left: 5px; }' +
         '.hider { position: absolute; left: -22px; top: 6px;}' +
-        '.next { position: absolute; left: -44px; top: 6px;}' +
-        '.prev { position: absolute; left: -66px; top: 6px;}';
+        'span.next { position: absolute; left: -44px; top: 6px;}' +
+        'article.hide-me { display: none}' +
+        'span.prev { position: absolute; left: -66px; top: 6px;}';
 
     styleEle.textContent = styleEle.textContent + '';
     document.head.appendChild(styleEle);
@@ -461,6 +472,23 @@ function makeOptionsForm() {
     filterBox.className = 'filter-floater';
     filterBox.style.display='none';
     
+    var storyFiltTab = document.createElement('span');
+    storyFiltTab.textContent = '[stories]';
+    storyFiltTab.style.fontWeight=400;
+    storyFiltTab.title = 'Hide stories with given tabs';
+    storyFiltTab.className = 'storyFiltTab';
+    storyFiltTab.addEventListener('click', function(){
+        stext.style.display='';
+        storyFiltTab.style.fontWeight=700;
+        userFiltTab.style.fontWeight=400;
+        commFiltTab.style.fontWeight=400;
+        miscFiltTab.style.fontWeight=400;
+        utext.style.display='none';
+        ctext.style.display='none';
+        miscBox.style.display='none';
+    }, false);
+    filterBox.appendChild(storyFiltTab);
+    
     var userFiltTab = document.createElement('span');
     userFiltTab.textContent = '[users]';
     userFiltTab.style.fontWeight=700;
@@ -469,9 +497,11 @@ function makeOptionsForm() {
     userFiltTab.addEventListener('click', function(){
         utext.style.display='';
         userFiltTab.style.fontWeight=700;
+        storyFiltTab.style.fontWeight=400;
         commFiltTab.style.fontWeight=400;
         miscFiltTab.style.fontWeight=400;
         ctext.style.display='none';
+        stext.style.display='none';
         miscBox.style.display='none';
     }, false);
     filterBox.appendChild(userFiltTab);
@@ -482,9 +512,11 @@ function makeOptionsForm() {
     commFiltTab.addEventListener('click', function(){
         ctext.style.display='';
         userFiltTab.style.fontWeight=400;
+        storyFiltTab.style.fontWeight=400;
         commFiltTab.style.fontWeight=700;
         miscFiltTab.style.fontWeight=400;
         utext.style.display='none';
+        stext.style.display='none';
         miscBox.style.display='none';
     }, false);
     filterBox.appendChild(commFiltTab);
@@ -494,9 +526,11 @@ function makeOptionsForm() {
     miscFiltTab.addEventListener('click', function(){
         ctext.style.display='none';
         utext.style.display='none';
+        stext.style.display='none';
         miscBox.style.display='';
         userFiltTab.style.fontWeight=400;
         commFiltTab.style.fontWeight=400;
+        storyFiltTab.style.fontWeight=400;
         miscFiltTab.style.fontWeight=700;
     }, false);
     filterBox.appendChild(miscFiltTab);
@@ -511,6 +545,11 @@ function makeOptionsForm() {
     ctext.title = 'Comment Filter';
     ctext.style.display='none';
     filterBox.appendChild(ctext);
+    stext=document.createElement('textarea');
+    stext.className='sfilters';
+    stext.title = 'Story Filter';
+    stext.style.display='none';
+    filterBox.appendChild(stext);
     
     var miscBox = document.createElement('div');
     miscBox.className='miscfilters';
@@ -638,6 +677,7 @@ function makeOptionsForm() {
     filtHider.className = 'filtHider';
     filtHider.addEventListener('click', function(){
 // var userIgnoreList = 'reason-ignore-list'; var commentIgnoreList = 'reason-comment-ignore-list';
+        stext.value=localStorage[storyIgnoreList].split('|').join("\n");
         utext.value=localStorage[userIgnoreList].split('|').join("\n");
         ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
         cb.checked =  ( localStorage[inlineYoutubeTag] == "true"  ) ? true : false;
@@ -660,6 +700,7 @@ function makeOptionsForm() {
     subHider.className = 'subHider';
     subHider.style.display='none';
     subHider.addEventListener('click', function(){
+        localStorage[storyIgnoreList] = stext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|").replace(/\|\|/g,"|").replace(/\|$/,"");
         localStorage[userIgnoreList] = utext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|").replace(/\|\|/g,"|").replace(/\|$/,"");
         localStorage[commentIgnoreList] = ctext.value.split("\n").join("|").replace(/ +\|/g,"|").replace(/\| +/g,"|").replace(/\|\|/g,"|").replace(/\|$/,"");
         
@@ -1332,7 +1373,7 @@ function makeNewText() {
                 }
                 if ( myBodyLink.search("liveleak.com") > -1 ) {
                     tmpSrc = myBodyLink.replace("/view","/ll_embed");
-                    tmpSrc = tmpSrc.replace("\?i","\?f");
+                  //  tmpSrc = tmpSrc.replace("\?i","\?f");
                     newFrame.className="liveleak-player";
                     newFrame.title="Liveleak video player";
                 }
@@ -1430,6 +1471,51 @@ function showYouTube() {
     yts=document.getElementsByClassName('youtube-player');
     for(var y=0;y<yts.length;y++ ) {
         yts[y].style.display="";
+    }
+}
+
+function hideStories() {
+    var posts = document.getElementsByTagName('article');
+    storyIgnoreListText = localStorage[storyIgnoreList];
+    storyIgnoreRegex = new RegExp(storyIgnoreListText, "i");
+    if ( storyIgnoreListText.length > 0 ) {
+        for(var i=0; i< posts.length; i++ ) {
+            var hide = 0;
+            var author = "";
+            if ( posts[i].getElementsByClassName('byline')[0].getElementsByTagName('a').length > 0 ) {
+                author = posts[i].getElementsByClassName('byline')[0].getElementsByTagName('a')[0].innerText;
+            }
+            var title = posts[i].getElementsByClassName('title')[0].getElementsByTagName('a')[0].innerText;
+            if ( author.search(storyIgnoreRegex) > -1 ) {
+                hide = 1;
+            }
+            if ( posts[i].getElementsByClassName("relatedtopics").length > 0 ) {
+                var tags = posts[i].getElementsByClassName("relatedtopics")[0].getElementsByTagName("a");
+                for(var j=0; j < tags.length; j++ ) {
+                    if(tags[j].innerText.search(storyIgnoreRegex) > -1 ) {
+                        hide=1;
+                    }
+                }
+            }
+            if ( hide === 1 ) {
+                var hideLink = document.createElement('a');
+                hideLink.id="hide-" + posts[i].id;
+                hideLink.className = 'title';
+                hideLink.style["font-size"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["font-size"];
+                hideLink.style["font-weight"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["font-weight"];
+                hideLink.style["font-family"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["font-family"];
+                hideLink.style["line-height"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["line-height"];
+                hideLink.style["border-bottom"] = window.getComputedStyle(posts[i])["border-bottom"];
+               // hideLink.style["margin-bottom"] = "1em"; window.getComputedStyle(posts[i])["margin-bottom"];
+               // hideLink.style["padding-bottom"] = "1em"; //window.getComputedStyle(posts[i])["padding-bottom"];
+                hideLink.style["position"] = window.getComputedStyle(posts[i])["position"];
+                hideLink.style.textDecoration = 'underline';
+                hideLink.textContent = sunhide + ": " + title + " (" + author + ")";
+                hideLink.addEventListener('click', function() { var storyId=this.id.split("-")[1];  var story=document.getElementById(storyId); console.log("toggle ",story);story.style.display = ( window.getComputedStyle(story).display == "none" ) ? "block" : "none"; }, false);
+                posts[i].parentNode.insertBefore(hideLink, posts[i]);
+                posts[i].classList.add('hide-me');
+            }
+        }
     }
 }
 
@@ -1756,12 +1842,13 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
         setTimeout(document.getElementById('comments').scrollIntoView(true),2000);
     }
 }
-else if (location.pathname.substring(0,7).match(/\/blog\/?$/) && ! inIframe()) {
+else if (location.pathname.substring(0,6).match(/\/blog\/?$/) && ! inIframe()) {
     console.log("I've done a little collage work myself");
     formatPostImageText();
     makeMainCss();
     makeOptionsForm();
     fontOverride();
+    hideStories();
     var storyTimes=document.getElementsByClassName('mainheading');
     for (var e=0; e<storyTimes.length;e++) {
         //this is fine for some reason
@@ -1775,3 +1862,4 @@ else if (location.pathname.substring(0,7).match(/\/blog\/?$/) && ! inIframe()) {
 else {
     console.log("Did I end up in an iframe?");
 }    
+
