@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-<<<<<<< HEAD
 // @version      0.9.5.1
-=======
-// @version      0.9.4.8.3
->>>>>>> 2ae8421db6f3b7b0f14e6d3c58d6d5f0a54df057
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
