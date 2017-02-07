@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.5.2
+// @version      0.9.5.3
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
@@ -1509,6 +1509,8 @@ function hideStories() {
                 hideLink.textContent = sunhide + ": " + title + " (" + author + ")";
                 hideLink.addEventListener('click', function() { var storyId=this.id.split("-")[1];  var story=document.getElementById(storyId); console.log("toggle ",story);story.style.display = ( window.getComputedStyle(story).display == "none" ) ? "block" : "none"; }, false);
                 posts[i].parentNode.insertBefore(hideLink, posts[i]);
+                var br = document.createElement('br');
+                posts[i].parentNode.insertBefore(br, posts[i]);
                 posts[i].classList.add('hide-me');
             }
         }
