@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.5.3
+// @version      0.9.6
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
@@ -18,9 +18,6 @@ function inIframe () {
         return true;
     }
 }
-//console.log(window.parent);
-//console.log(window.top);
-//console.log(window.self);
 
 // Global variables are fun!
 var lastGivenDate, commentCountText, commentsList, divDiv, dateInput, commentsScroller;
@@ -109,7 +106,6 @@ if ( typeof(localStorage[gravatarShowTag]) == 'undefined' ) {
 if ( typeof(localStorage[localTzTag]) == 'undefined' ) {
     localStorage[localTzTag] = true;
 }
-//localStorage[localTzTag] = true;
 
 //damn autoplay ads
 
@@ -158,14 +154,10 @@ function border(since, updateTitle) {
             myReplies.push(myReplyId);
         }
         var replyToMe=0;
-      //  var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
-       // var postTime = Date.parse(comments[i].querySelector('time').getAttribute('datetime'));
         var postTime = parseInt(comments[i].getAttributeNode('data-comment-timestamp').value) * 1000;
         if (postTime > since) {
             comments[i].classList.add('new-comment');
             if (myReplies.indexOf(comments[i].id) > -1 ) {
-           // if (myReplies.indexOf(comments[i].id) > -1  || ( i > 0 && comments[i-1].classList.contains('myPost'))) {
-                //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
                 comments[i].classList.add("areplyToMe");
                 replyToMe=1;
             }
@@ -234,7 +226,6 @@ function commentToggle() {
     var myComment = this.parentElement.parentElement;
     var myBody = myComment.querySelector('div.content');
     var myMeta = myComment.querySelector('p.meta');
-    //var myChildren = myComment.nextElementSibling;
     var myChildren = document.getElementsByClassName("parent-" + myComment.id);
     if(this.textContent == unhidden) {
         this.textContent = hidden;
@@ -421,15 +412,11 @@ function makeHighlight() {
 
 function getLastVisit(delta)
 {
- //   console.log("delta == " + delta);
- //   console.log("before myIndex == " + myIndex);
     delta = typeof delta != 'undefined' ? delta : 0; //default to show current index
     myIndex = myIndex + delta;
- //   console.log("myIndex == " + myIndex);
     var lastVisits = [];
     if ( typeof(localStorage[pathString]) != 'undefined' ) {
         lastVisits = localStorage[pathString].split(",");
- //   console.log("lastVisits == " + lastVisits);
     }
     loadCount = loadCount + 1;
     if ( loadCount == 2 ) {
@@ -438,11 +425,9 @@ function getLastVisit(delta)
     if ( myIndex < 0 ) {
         myIndex = 0; //keep it to a minimum of 0
     }
- //   console.log("myIndex == " + myIndex);
     var lastVisit=0;
     if ( myIndex > lastVisits.length ) {
         myIndex = lastVisits.length; //keep it to the earliest record
- //   console.log("myIndex == " + myIndex);
     }
     else {
         lastVisit = parseInt(lastVisits[myIndex]);
@@ -450,9 +435,7 @@ function getLastVisit(delta)
             lastVisit = 0; // prehistory! Actually 1970, which predates all SSC comments, so we're good.
         }
     }
- //   console.log("lastVisit == " + lastVisit);
     dateInput.value = (localStorage[localTzTag] == 'true' ) ? returnFormattedDateString(new Date(lastVisit)) : lastVisit;
- //   console.log("dateInput.value == " + dateInput.value);
     var mostRecent = border(lastVisit, false);
     lastVisits.push(mostRecent);
     if ( ( lastVisits.length == 1 ) || ( mostRecent != lastVisits[0] ) ) {
@@ -672,7 +655,6 @@ function makeOptionsForm() {
     filtHider.textContent = '[filters]';
     filtHider.className = 'filtHider';
     filtHider.addEventListener('click', function(){
-// var userIgnoreList = 'reason-ignore-list'; var commentIgnoreList = 'reason-comment-ignore-list';
         stext.value=localStorage[storyIgnoreList].split('|').join("\n");
         utext.value=localStorage[userIgnoreList].split('|').join("\n");
         ctext.value=localStorage[commentIgnoreList].split('|').join("\n");
@@ -803,28 +785,14 @@ function makeShowHide() {
 
     var lastReplyNum = 0;
     var parentStack = [];
-    if (document.getElementById('user_login_control').childNodes.length > 0 && document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0) {
+    if (document.getElementById('user_login_control').childNodes.length > 0 && document.getElementsByClassName('logged_in_as').length > 0 && document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle').length > 0) {
         myName = document.getElementsByClassName('logged_in_as')[0].getElementsByClassName('handle')[0].innerHTML;
         console.log("My Name is " + myName);
     }
     for (var i = 0; i < comments.length; ++i) {
         myReplyId = comments[i].id;
-       // myReplyNum = parseInt(comments[i].classList[1].replace("reply", ""));
         myReplyNum = parseInt(comments[i].className.match(/reply[0-9]/)[0].replace("reply",""));
         parentStack[myReplyNum] = myReplyId;
-/*
-        var commenter;
-        if (comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a').length > 0) {
-            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].getElementsByTagName('a')[0].innerHTML;
-        }
-        else {
-            commenter = comments[i].getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML;
-        }
-        if (commenter == myName) {
-            comments[i].classList.add("myPost");
-            myComments.push(myReplyId);
-        }
-*/
         if (myComments.indexOf(parentStack[myReplyNum - 1]) > -1) {
             myReplies.push(myReplyId);
         }
@@ -1091,19 +1059,7 @@ function createFormattingDiv() {
     strTag.innerHTML="&lt;strike>";
     sfc.appendChild(strTag);
 
-    /*
     //italics not supported
-    var ulTag=document.createElement('button');
-    ulTag.id="ul-" + id;
-    ulTag.setAttribute('title', 'Underline text');
-    ulTag.onclick = function(but) { 
-        var form=but.target.parentElement.parentElement.parentElement;
-        myFormatText("u",form.getElementsByTagName('textarea')[0]); 
-        return false; 
-    };
-    ulTag.innerHTML="&lt;u>";
-    sfc.appendChild(ulTag);
-    */
 }
 
 function myFormatText(tag,ta) {
@@ -1136,20 +1092,16 @@ function myFormatText(tag,ta) {
           }
           if ( li.id != 'comments-in-tz' ) {
               if ( li.id == 'preview_content' || li.classList.contains('myPost') ) {
-                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
-                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
                   citeTime=returnFormattedDateString(new Date(li.getAttributeNode('data-comment-timestamp').value * 1000)).split(" ")[1];
                   cite="I";
               }
               else if ( li.classList.contains('com-block') ) {
-                  //citeTime=returnFormattedDateString(new Date(li.getElementsByClassName('meta')[0].getElementsByTagName('time')[0].getAttributeNode('datetime').value)).split(" ")[1];
                   citeTime=returnFormattedDateString(new Date(li.getAttributeNode('data-comment-timestamp').value * 1000)).split(" ")[1];
                   cite=li.getElementsByClassName('meta')[0].getElementsByTagName('strong')[0].innerHTML.replace(/<script(?:.|\s)*\/script>/m, "");
               }
           }
       }
       if ( tag == "cite" ) {
-     //     console.log("A cite you say?");
           pre = "<cite>" + cite + " said";
           if ( citeTime.length > 0 ) {
               pre += " @" + citeTime;
@@ -1162,19 +1114,16 @@ function myFormatText(tag,ta) {
           post="</" + tag + ">";
       }
       var sel = window.getSelection();
-    //  console.log("raw selection = " + sel.toString());
       for (var i = 0, len = sel.rangeCount; i < len; ++i) {
         tmpdiv.appendChild(sel.getRangeAt(i).cloneContents());
       }
       reptext = reptext.concat(tmpdiv.innerHTML).replace(/<!--[^>]*>/,"").replace(/<\/?div[^>]*>/,"").replace(/<span class="new-text">[^>]*>/,"").replace(/<\/?span[^>]*>/,"");
       reptext = pre + reptext + post;
-     // console.log("selection text == " + reptext);
     }
     else {
         reptext="<" + tag + ">" + ta.value.substring(startPos, endPos) + "</" + tag + ">";
     }
     replaceWhereWithWhat(ta,startPos,endPos,reptext);
-    //ta.value=ta.value.substring(0,startPos) + reptext + ta.value.substring(endPos,ta.value.length);
     var cc=ta.parentElement.getElementsByClassName('characterCount')[0]; 
     updateNumCharsInElement(ta.value,cc,maxCommentLength);
 }
@@ -1293,11 +1242,9 @@ function makeNewText() {
     if ( typeof(storyTime) != 'undefined' && localStorage[localTzTag] == 'true' ) {
         //also fine for now
         storyTime.innerHTML=returnFormattedDateString(new Date(storyTime.getAttributeNode('datetime').value));
-        // storyTime.innerHTML=returnFormattedDateString2(storyTime.getAttributeNode('datetime').value, storyTime.innerHTML);
     }
     
     for(var i=0; i<comments.length; ++i) {
-       // var myReplyNum=parseInt(comments[i].classList[1].replace("reply",""));
         var myReplyNum=parseInt(comments[i].className.match(/reply[0-9]/)[0].replace("reply",""));
         var badMatch = document.createElement('p');
         badMatch.className = 'bad-match';
@@ -1308,8 +1255,6 @@ function makeNewText() {
         var newText = document.createElement('span');
         newText.className = 'new-text';
         if (myReplies.indexOf(comments[i].id) > -1) {
-            //if ( typeof(comments[i-1]) == "object"  && myReplyNum < 5 && comments[i-1].classList.contains('myPost')) {
-            // if (comments[i].classList.contains('replyToMe')) {
             newText.textContent = '~new~ ~toMe~';
         }
         else {
@@ -1321,7 +1266,6 @@ function makeNewText() {
 
         var meta = comments[i].querySelector('p.meta');
         t=meta.getElementsByTagName('time')[0];
-        //tx=new Date(t.getAttributeNode('datetime').value);
         tx=new Date(comments[i].getAttributeNode('data-comment-timestamp').value * 1000)
         var datestring = returnFormattedDateString(tx);
         if ( localStorage[localTzTag] == 'true' ) {
@@ -1329,7 +1273,6 @@ function makeNewText() {
         }
         meta.appendChild(commentId);
         
-      //  if ( comments[i].classList.toString().match(/parent-comment_[0-9]*/) ) {
         if ( comments[i].className.match(/parent-comment_[0-9]*/) ) {
             var gotoComment = comments[i].className.match(/parent-comment_[0-9]*/)[0].split("-")[1];
             var parentBut = document.createElement('button');
@@ -1369,7 +1312,6 @@ function makeNewText() {
                 }
                 if ( myBodyLink.search("liveleak.com") > -1 ) {
                     tmpSrc = myBodyLink.replace("/view","/ll_embed");
-                  //  tmpSrc = tmpSrc.replace("\?i","\?f");
                     newFrame.className="liveleak-player";
                     newFrame.title="Liveleak video player";
                 }
@@ -1390,35 +1332,20 @@ function makeNewText() {
                     var otargs=[];
                     for ( yti=0; yti < args.length; yti++ ) {
                         if ( args[yti].search("v=") === 0 ) {
-                          //  tmpSrc += "?" + args[yti];
                             movId=args[yti].split("=")[1];
                         }
-                       // else if ( args[yti].startsWith("html5=") ) {
-                       //     ;
-                       // }
                         else if ( args[yti].startsWith("t=") ) {
                             var newtime = (args[yti].split("=")[1].match(/h|m|s/) ) ? timeToSeconds(args[yti].split("=")[1]) : args[yti].split("=")[1];
                             otargs.push("start=" + newtime);
-                          //  otargs.push(args[yti].replace("t=","start="));
                         }
                         else if ( args[yti].startsWith("start=") || args[yti].startsWith("end=") ) {
                             var newtime = (args[yti].split("=")[1].match(/h|m|s/) ) ? timeToSeconds(args[yti].split("=")[1]) : args[yti].split("=")[1];
                             otargs.push(args[yti].split("=")[0] + "=" + newtime);
                         }
-                        else {
-                            //otargs.push(args[yti]);
-                        }
                     }
                     otargs.push("rel=0");
                     otargs.push("autoplay=0");
-                 /*   if ( otargs.length > 0 ) {
-                        tmpSrc += "&" + otargs.join("&");
-                    }*/
-                  //  movId = myBodyLink.split("/")[3].split("=")[1];
                     tmpSrc=tmpSrc + "embed/" + movId + "?" + otargs.join("&");
-                   // tmpSrc=tmpSrc.replace("watch?v=", "embed/");
-                   // tmpSrc=tmpSrc.replace("&t=", "?t=");
-                   // tmpSrc=tmpSrc.replace("&", "?");
                     newFrame.src=tmpSrc;
                 }
                 else {
@@ -1502,8 +1429,6 @@ function hideStories() {
                 hideLink.style["font-family"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["font-family"];
                 hideLink.style["line-height"] = window.getComputedStyle(posts[i].getElementsByClassName('title')[0])["line-height"];
                 hideLink.style["border-bottom"] = window.getComputedStyle(posts[i])["border-bottom"];
-               // hideLink.style["margin-bottom"] = "1em"; window.getComputedStyle(posts[i])["margin-bottom"];
-               // hideLink.style["padding-bottom"] = "1em"; //window.getComputedStyle(posts[i])["padding-bottom"];
                 hideLink.style["position"] = window.getComputedStyle(posts[i])["position"];
                 hideLink.style.textDecoration = 'underline';
                 hideLink.textContent = sunhide + ": " + title + " (" + author + ")";
@@ -1523,7 +1448,6 @@ function hideBastards() {
     var filter = localStorage[filterTag];
     var comments = document.getElementById('comments').querySelectorAll('.com-block');
     var cs=document.getElementById('comments-scroller');
-    // commentIgnoreList='reason-comment-ignore-list' ; userIgnoreList = 'reason-ignore-list';
     userIgnoreListText = localStorage[userIgnoreList];
     userIgnoreEmailText = userIgnoreListText.split("|").filter(function (s) { return s.indexOf("@") !== -1 ;}).join("|");
     userIgnoreEmailRegex = new RegExp(userIgnoreEmailText, "i");
@@ -1544,7 +1468,6 @@ function hideBastards() {
             else {
                 userName = userBlock.innerHTML;
             }
-            //if ( filter == "true" && userIgnoreListText.length > 0 && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && comments[i].getElementsByClassName('meta')[0].innerHTML.toLowerCase().search(userIgnoreListText) > -1 )  {
             if ( filter == "true" && comments[i].getElementsByClassName('comment-reply-link')[0].innerHTML == unhidden && 
                     ( ( userIgnoreListText.length > 0 && userName.search(userIgnoreNameRegex) > -1 )  || 
                      ( userIgnoreEmailText.length > 0 && userLink.search(userIgnoreEmailRegex) > -1 ) || 
@@ -1555,7 +1478,6 @@ function hideBastards() {
                 if (  userIgnoreEmailText.length > 0 && userLink.search(userIgnoreEmailRegex) > -1 ) {
                     whichList = userIgnoreEmailRegex;
                     matchType = "user email";
-                //    console.log("cnt = " + userIgnoreEmailText.length + " match = " +  userLink.search(userIgnoreEmailRegex) + " userLink = " + userLink);
                     match = userLink.match(whichList);
                 }
                 else if ( userIgnoreLinkText.length > 0 && userLink.search(userIgnoreLinkRegex) > -1 ) {
@@ -1566,7 +1488,6 @@ function hideBastards() {
                 else {
                     match = userName.match(whichList);
                 }
-               // var match = comments[i].getElementsByClassName('meta')[0].innerHTML.match(whichList);
                 var badMatch=comments[i].getElementsByClassName('bad-match')[0];
                 badMatch.style.display='';
                         badMatch.innerHTML = (badMatch.length > 0) ? badMatch.innerHTML + match + " ": "Hide reasons (" + matchType +  "): " + match + " ";
@@ -1702,8 +1623,6 @@ function toggleIndent(array) {
 }
 
 function makeCharacterThingy() {
-        // myCharTablePage=0; function refreshCharTablePage() { var myTab=document.getElementById("CharacterInputTable"); var cells=myTab.getElementsByTagName('td'); for ( var i=0; i<cells.length;i++) {var r=cells[i].id.split("row-")[1].split("-")[0]; var c=cells[i].id.split("-column-")[1]; var myCharTabNumCols=16; var myCharTabNumRows=8; cells[i].innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";}}
-        // myCharTablePage=0; var myCharTabNumRows=8; var myCharTabNumCols=16;
         var myDiv=document.createElement('div');
         if ( localStorage[keyboardShowTag] == "false" ) {
             myDiv.style.display="none";
@@ -1781,11 +1700,9 @@ function makeCharacterThingy() {
                 cellBut.onclick = function(but) { 
                     var cellId=parseInt(this.id.split("charCell-")[1]);
                     var form=document.getElementsByClassName('leave-comment')[0].getElementsByTagName('form')[0];
-                    //var form=but.target.parentElement.parentElement.parentElement;
                     form.getElementsByTagName('textarea')[0].value += "&#" + (cellId+32+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";"; 
                     return false; 
                 };
-               // cellBut.innerHTML="&lt;cite>";
                 cellBut.innerHTML="&#" + (32+c+r*myCharTabNumCols+myCharTablePage*myCharTabNumCols*myCharTabNumRows) + ";";
                 myCell.appendChild(cellBut);
             }
@@ -1800,7 +1717,6 @@ function refreshCharTablePage() {
         var r=parseInt(cells[i].id.split("row-")[1].split("-")[0]);
         var c=parseInt(cells[i].id.split("-column-")[1]);
         var charNum=((32)+(c)+(r*myCharTabNumCols)+(myCharTablePage*myCharTabNumCols*myCharTabNumRows));
-//        console.log("r=" + r + " c=" + c + " charNum = " + charNum);
         cells[i].getElementsByTagName('button')[0].innerHTML="&#" + charNum + ";";
     }
 }
@@ -1853,7 +1769,6 @@ else if (location.pathname.substring(0,6).match(/\/blog\/?$/) && ! inIframe()) {
         storyTime=storyTimes[e].getElementsByTagName('time')[0];
         if ( typeof(storyTime) != 'undefined' && localStorage[localTzTag] == 'true' ) {
             storyTime.innerHTML=returnFormattedDateString(new Date(storyTime.getAttributeNode('datetime').value));
-            // storyTime.innerHTML=returnFormattedDateString2(storyTime.getAttributeNode('datetime').value, storyTime.innerHTML);
         }
     }
 }
