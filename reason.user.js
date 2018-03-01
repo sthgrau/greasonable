@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.6.1
+// @version      0.9.6.2
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
@@ -829,7 +829,7 @@ function makeShowHide() {
             newReply.innerHTML = '&nbsp; &nbsp; async reply';
             //reply.style.display='none';
             comments[i].getElementsByClassName('commentactions')[0].appendChild(newReply);
-            //reply.onclick = function() { setFormId(this); }
+            reply.onmouseup = function() { setFormId(this); }
             //    }
         }
     }
