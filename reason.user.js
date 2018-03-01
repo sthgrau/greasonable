@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Full Reason
 // @namespace    http://github.com/sthgrau/greasonable
-// @version      0.9.6
+// @version      0.9.6.1
 // @description  does something useful
 // @author       Me
 // @include      http*://reason.com/*
@@ -1722,7 +1722,7 @@ function refreshCharTablePage() {
 }
 
 // Run iff we're on a page which looks like a post
-if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/reasontv/') || (location.pathname.substring(0,10) == '/brickbat/')) && ! inIframe() ) {
+if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring(0, 8) == '/blog/20') || (location.pathname.substring(0, 10) == '/volokh/20') || (location.pathname.substring(0, 10) == '/reasontv/') || (location.pathname.substring(0,10) == '/brickbat/')) && ! inIframe() ) {
     if ( ! inIframe() ) {
         console.log("says NOT in iframe");
     }
@@ -1756,7 +1756,7 @@ if(((location.pathname.substring(0, 3) == '/ar') || (location.pathname.substring
         setTimeout(document.getElementById('comments').scrollIntoView(true),2000);
     }
 }
-else if (location.pathname.substring(0,6).match(/\/blog\/?$/) && ! inIframe()) {
+else if ((location.pathname.substring(0,6).match(/\/blog\/?$/) || (location.pathname.substring(0, 7) == '/volokh'))&& ! inIframe()) {
     console.log("I've done a little collage work myself");
     formatPostImageText();
     makeMainCss();
